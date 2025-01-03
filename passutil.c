@@ -14,10 +14,15 @@
 
 #include "exit-codes.h"
 
+#include "generation.c"
+#include "util.c"
+
 static int debug = false;
 static int interactive = false;
 
 int main(int argc, char* argv[]) {
+	/* OPTION PARSING */
+
 	int option, option_index;
 
 	static struct option long_options[] = {
@@ -62,6 +67,27 @@ int main(int argc, char* argv[]) {
 				return EXIT_CODE_UNKNOWN_ERROR;
 		}
 	}
+
+	printf("THING\n");
+
+	char* thing = "TEST";
+	char* key = malloc(strlen(thing)+1);
+	strcpy(key, thing);
+	fflush(stdout);
+	printf("%s\n", key);
+	char* shuffle_key;
+	char* shuffle_key_format = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	generate_shuffle_key(&shuffle_key, shuffle_key_format);
+	printf("Key: %s\n", shuffle_key);
+	char* shuffled_key = shuffle(key, shuffle_key, shuffle_key_format);
+	char* text = "Hello world!";
+	printf("%s\n", text);
+	char* encrypted_text = encrypt("AES256", text, strlen(text)+1, shuffled_key, shuffle_key, shuffle_key_format);
+	char* decrypted_text = decrypt("AES256", encrypted_text, strlen(text)+1, shuffled_key, shuffle_key, shuffle_key_format);
+
+
+	printf("%s\n", encrypted_text);
+	printf("%s\n", decrypted_text);
 
 	return EXIT_CODE_SUCCESS;
 }
