@@ -9,4 +9,6 @@
 
 #define FORMAT_AZaz09_symb_sp "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"@#$%'()^&*-=_+,./\\:;<>?[]{}`|~ "
 
+#define FORMAT_AZaz09_64 "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789"
+
 #endif
