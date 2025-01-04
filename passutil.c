@@ -14,8 +14,10 @@
 
 #include "exit-codes.h"
 
-#include "storage.c"
+#include "util.c"
+#include "shuffler.c"
 #include "generation.c"
+#include "storage.c"
 
 static int debug = false;
 static int interactive = false;

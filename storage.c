@@ -1,35 +1,13 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<stdbool.h>
+#include<string.h>
 #include<math.h>
 
-#include "util.c"
-//#include "shuffler.c"
+#include "storage.h"
 
-typedef struct password Password;
-
-typedef struct store {
-	char* algorithm;
-	char* shuffled_key;
-	char* shuffle_key;
-	char* shuffle_key_format;
-	bool key_verifiable;
-	char* key_verification_algorithm;
-	unsigned long key_verification_algorithm_rounds;
-	char* key_verification_salt;
-	char* key_verification_text;
-	unsigned long password_count;
-	Password** passwords;
-} Store;
-
-typedef struct password {
-	Store* store;
-	char* identifier;
-	unsigned short length;
-	unsigned short byte_length;
-	unsigned short encrypted_byte_length;
-	char* format;
-	char* encrypted_password;
-} Password;
+#include "util.h"
+#include "shuffler.h"
 
 Store* construct_store() {
 	Store* new_store = malloc(sizeof(Store));
@@ -172,7 +150,7 @@ bool write(Store* store, Password* password, unsigned char* plain_password_bytes
 	return true;
 }
 
-bool insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
+bool copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
 	if(store->key_verifiable) {
 		//char* key = unshuffle(shuffled_key, shuffle_key, shuffle_key_format);
 

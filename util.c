@@ -5,7 +5,9 @@
 #include<openssl/aes.h>
 #include<openssl/sha.h>
 
-#include "shuffler.c"
+#include "util.h"
+
+#include "shuffler.h"
 
 char* strcpymalloc(char* string) {
 	char* new_str = malloc(strlen(string)+1);
