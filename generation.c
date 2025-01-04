@@ -43,8 +43,10 @@ Password* generate_password(Store* store, char* format, unsigned int length) {
 	return password;
 }
 
-void generate_password_and_append(Store* store, char* identifier, char* format, unsigned int length) {
+Password* generate_password_and_append(Store* store, char* identifier, char* format, unsigned int length) {
 	Password* password = generate_password(store, format, length);
 
 	append_password(store, password, identifier);
+
+	return password;
 }
