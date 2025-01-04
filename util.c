@@ -59,7 +59,10 @@ unsigned char* encrypt(unsigned int* result_length, char* cipher, unsigned char*
 		free(key);
 		AES_KEY aes_key;
 		AES_set_encrypt_key(key_digest, 256, &aes_key);
-		*result_length = sizeof(unsigned char)*(length/AES_BLOCK_SIZE+1)*AES_BLOCK_SIZE;
+		if(length % AES_BLOCK_SIZE == 0)
+			*result_length = sizeof(unsigned char)*length;
+		else
+			*result_length = sizeof(unsigned char)*(length/AES_BLOCK_SIZE+1)*AES_BLOCK_SIZE;
 		encrypted_bytes = malloc(*result_length);
 		iv = malloc(sizeof(unsigned char)*AES_BLOCK_SIZE);
 		memset(iv, 0, AES_BLOCK_SIZE);
@@ -77,6 +80,7 @@ unsigned char* decrypt(char* cipher, unsigned char* encrypted_bytes, unsigned in
 	unsigned char* key_digest;
 	unsigned char* bytes;
 	unsigned char* iv;
+	unsigned int bytes_length;
 
 	if(strcmp(cipher, "AES256") == 0) {
 		key_digest = malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
@@ -84,7 +88,11 @@ unsigned char* decrypt(char* cipher, unsigned char* encrypted_bytes, unsigned in
 		free(key);
 		AES_KEY aes_key;
 		AES_set_decrypt_key(key_digest, 256, &aes_key);
-		bytes = malloc(sizeof(unsigned char)*(length/AES_BLOCK_SIZE+1)*AES_BLOCK_SIZE);
+		if(length % AES_BLOCK_SIZE == 0)
+			bytes_length = sizeof(unsigned char)*length;
+		else
+			bytes_length = sizeof(unsigned char)*(length/AES_BLOCK_SIZE+1)*AES_BLOCK_SIZE;
+		bytes = malloc(bytes_length);
 		iv = malloc(sizeof(unsigned char)*AES_BLOCK_SIZE);
 		memset(iv, 0, AES_BLOCK_SIZE);
 		AES_cbc_encrypt(encrypted_bytes, bytes, length, &aes_key, iv, AES_DECRYPT);
