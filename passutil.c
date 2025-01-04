@@ -75,11 +75,12 @@ int main(int argc, char* argv[]) {
 	store->shuffled_key = shuffle("HelloWorld", store->shuffle_key, store->shuffle_key_format);
 
 	Password* password = construct_password();
-	//unsigned int password_length = 50;
-	//unsigned char* password_bytes = generate_password_bytes(password_length);
-	unsigned int password_length = 4;
-	unsigned char password_bytes[4] = { 0x0, 0x1, 0x2, 0x3 };
-	write(store, password, password_bytes, password_length, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", password_length);
+	unsigned int password_length = 50;
+	unsigned int password_length_bytes = password_length*(sizeof(unsigned long)/sizeof(char));
+	unsigned char* password_bytes = generate_password_bytes(password_length_bytes);
+	//unsigned int password_length = 4;
+	//unsigned char password_bytes[4] = { 0x0, 0x1, 0x2, 0x3 };
+	write(store, password, password_bytes, password_length_bytes, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", password_length);
 	append_password(store, password, "Some Service");
 	char* plain_password_1 = read_plain(password);
 
