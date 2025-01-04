@@ -1,10 +1,13 @@
 #include<stdbool.h>
 
+#ifndef STORAGE_H
+#define STORAGE_H
+
 typedef struct store Store;
 
 typedef struct password Password;
 
-typedef struct store {
+struct store {
 	char* algorithm;
 	char* shuffled_key;
 	char* shuffle_key;
@@ -16,9 +19,9 @@ typedef struct store {
 	char* key_verification_text;
 	unsigned long password_count;
 	Password** passwords;
-} Store;
+};
 
-typedef struct password {
+struct password {
 	Store* store;
 	char* identifier;
 	unsigned short length;
@@ -26,7 +29,7 @@ typedef struct password {
 	unsigned short encrypted_byte_length;
 	char* format;
 	char* encrypted_password;
-} Password;
+};
 
 Store* construct_store();
 
@@ -51,3 +54,5 @@ bool write(Store* store, Password* password, unsigned char* plain_password_bytes
 bool copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format);
 
 void remove_key_and_dispose(Store* store);
+
+#endif
