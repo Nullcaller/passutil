@@ -39,6 +39,10 @@ bool append_password(Store* store, Password* password, char* identifier);
 
 Password* remove_password(Store* store, unsigned long password_index);
 
+unsigned char* serialize_metadata(Store* store, unsigned int* length);
+
+unsigned char* serialize_password_sequence(Store* store, unsigned int* length);
+
 int save(Store* store, FILE* metadata_file, FILE* master_file);
 
 int load(FILE* metadata_file, FILE* master_file, Store** store);

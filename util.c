@@ -15,6 +15,38 @@ char* strcpymalloc(char* string) {
 	return new_str;
 }
 
+char* strappendrealloc(char* destination, unsigned int* destination_allocated_length, unsigned int piece_length, char* source) {
+	unsigned int destination_length;
+
+	if(destination == NULL) {
+		destination = malloc(sizeof(char)*piece_length);
+		*destination_allocated_length = sizeof(char)*piece_length;
+		destination_length = 0;
+	} else {
+		destination_length = strlen(destination);
+	}
+
+	unsigned int source_length = strlen(source);
+
+	if((destination_length + source_length + 1) > *destination_allocated_length) {
+		unsigned int new_length = ((destination_length + source_length + 1)/piece_length+1)*piece_length;
+		destination = realloc(destination, new_length);
+		*destination_allocated_length = new_length;
+	}
+
+	strcpy(destination+destination_length, source);
+	return destination;
+}
+
+char* strtrimrealloc(char* string, unsigned int* allocated_length) {
+	unsigned int length = strlen(string);
+
+	string = realloc(string, length+1);
+	*allocated_length = length+1;
+
+	return string;
+}
+
 unsigned char* encrypt(unsigned int* result_length, char* cipher, unsigned char* bytes, unsigned int length, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
 	char* key = unshuffle(shuffled_key, shuffle_key, shuffle_key_format);
 	unsigned char* key_digest;

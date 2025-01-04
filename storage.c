@@ -86,6 +86,56 @@ Password* remove_password(Store* store, unsigned long password_index) {
 	return removed;
 }
 
+unsigned char* serialize_metadata(Store* store, unsigned int* length) {
+	unsigned int piece_length = 4096;
+	unsigned int buffer_length = 4096;
+
+	unsigned char* serialized_metadata = NULL;
+	unsigned int sml;
+	char* buffer = malloc(buffer_length*sizeof(unsigned char));
+
+	sprintf(buffer, "cv=`%s`,algo=`%s`,keyverif=`%s`,", "1.0", store->algorithm, store->key_verifiable ? "true" : "false");
+	serialized_metadata = strappendrealloc(serialized_metadata, &sml, piece_length, buffer);
+	if(store->key_verifiable) {
+		sprintf(buffer, "keyverifalgo=`%s`,keyverifrounds=`%ld`,keyverifsalt=`%s`,keyverifsig=`%s`,", store->key_verification_algorithm, store->key_verification_algorithm_rounds, store->key_verification_salt, store->key_verification_text);
+		serialized_metadata = strappendrealloc(serialized_metadata, &sml, piece_length, buffer);
+	}
+	sprintf(buffer, "passcount=`%ld`\n", store->password_count);
+	serialized_metadata = strappendrealloc(serialized_metadata, &sml, piece_length, buffer);
+
+	unsigned long passcount = store->password_count;
+	Password* password;
+	for(unsigned long it = 0; it < passcount; it++) {
+		password = store->passwords[it];
+		sprintf(buffer, "identifier=`%s`,encbytelen=`%hd`,bytelen=`%hd`,len=`%hd`,formatlen=`%ld`,format=`%s`\n", password->identifier, password->encrypted_byte_length, password->byte_length, password->length, strlen(password->format), password->format);
+		serialized_metadata = strappendrealloc(serialized_metadata, &sml, piece_length, buffer);
+	}
+
+	serialized_metadata = strtrimrealloc(serialized_metadata, &sml);
+	*length = sml;
+
+	return serialized_metadata;
+}
+
+unsigned char* serialize_password_sequence(Store* store, unsigned int* length) {
+	Password** passwords = store->passwords;
+	unsigned long password_count = store->password_count;
+
+	unsigned int byte_length = 0;
+	for(unsigned long it = 0; it < password_count; it++)
+		byte_length += passwords[it]->encrypted_byte_length;
+	
+	unsigned char* serialized_password_sequence = malloc(sizeof(unsigned char)*byte_length);
+	byte_length = 0;
+	for(unsigned long it = 0; it < password_count; it++) {
+		memcpy(serialized_password_sequence+byte_length, passwords[it]->encrypted_password, passwords[it]->encrypted_byte_length);
+		byte_length += passwords[it]->encrypted_byte_length;
+	}
+
+	*length = byte_length;
+	return serialized_password_sequence;
+}
+
 int save(Store* store, FILE* metadata_file, FILE* master_file) {
 
 }
