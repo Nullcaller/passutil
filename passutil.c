@@ -14,8 +14,8 @@
 
 #include "exit-codes.h"
 
+#include "storage.c"
 #include "generation.c"
-#include "util.c"
 
 static int debug = false;
 static int interactive = false;
@@ -68,26 +68,26 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	printf("THING\n");
+	Store* store = construct_store();
+	store->algorithm = "AES256";
+	store->shuffle_key_format = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	generate_shuffle_key(&store->shuffle_key, store->shuffle_key_format);
+	store->shuffled_key = shuffle("HelloWorld", store->shuffle_key, store->shuffle_key_format);
 
-	char* thing = "TEST";
-	char* key = malloc(strlen(thing)+1);
-	strcpy(key, thing);
-	fflush(stdout);
-	printf("%s\n", key);
-	char* shuffle_key;
-	char* shuffle_key_format = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	generate_shuffle_key(&shuffle_key, shuffle_key_format);
-	printf("Key: %s\n", shuffle_key);
-	char* shuffled_key = shuffle(key, shuffle_key, shuffle_key_format);
-	char* text = "Hello world!";
-	printf("%s\n", text);
-	char* encrypted_text = encrypt("AES256", text, strlen(text)+1, shuffled_key, shuffle_key, shuffle_key_format);
-	char* decrypted_text = decrypt("AES256", encrypted_text, strlen(text)+1, shuffled_key, shuffle_key, shuffle_key_format);
+	Password* password = construct_password();
+	//unsigned int password_length = 50;
+	//unsigned char* password_bytes = generate_password_bytes(password_length);
+	unsigned int password_length = 4;
+	unsigned char password_bytes[4] = { 0x0, 0x1, 0x2, 0x3 };
+	write(store, password, password_bytes, password_length, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", password_length);
+	append_password(store, password, "Some Service");
+	char* plain_password_1 = read_plain(password);
 
+	Password* found_password = find(store, "Some Service");
+	char* plain_password_2 = read_plain(found_password);
 
-	printf("%s\n", encrypted_text);
-	printf("%s\n", decrypted_text);
+	printf("%s\n", plain_password_1);
+	printf("%s\n", plain_password_2);
 
 	return EXIT_CODE_SUCCESS;
 }
