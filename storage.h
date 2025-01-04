@@ -43,6 +43,16 @@ unsigned char* serialize_metadata(Store* store, unsigned int* length);
 
 unsigned char* serialize_password_sequence(Store* store, unsigned int* length);
 
+bool parse_metadata_store_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** algorithm, bool* key_verifiable, char** key_verification_algorithm, unsigned long* key_verification_algorithm_rounds, char** key_verification_salt, char** key_verification_text, unsigned long* password_count);
+
+bool parse_metadata_password_string(unsigned char* serialize_metadata, unsigned int length, unsigned int* position, char** identifier, unsigned short* password_length, unsigned short* password_byte_length, unsigned short* password_encrypted_byte_length, char** format);
+
+Store* deserialize_metadata_store(unsigned char* serialized_metadata, unsigned int length, unsigned int* position);
+
+Password* deserialize_metadata_password(Store* store, unsigned char* serialized_metadata, unsigned int length, unsigned int* position);
+
+Store* deserialize(unsigned char* serialized_metadata, unsigned int serialized_metadata_length, unsigned char* serialized_password_sequence, unsigned int serialized_password_sequence_length);
+
 int save(Store* store, FILE* metadata_file, FILE* master_file);
 
 int load(FILE* metadata_file, FILE* master_file, Store** store);
