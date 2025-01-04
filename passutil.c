@@ -13,6 +13,7 @@
 #include<getopt.h>
 
 #include "exit-codes.h"
+#include "formats.h"
 
 #include "util.c"
 #include "shuffler.c"
@@ -72,18 +73,11 @@ int main(int argc, char* argv[]) {
 
 	Store* store = construct_store();
 	store->algorithm = "AES256";
-	store->shuffle_key_format = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	store->shuffle_key_format = FORMAT_AZaz09;
 	generate_shuffle_key(&store->shuffle_key, store->shuffle_key_format);
 	store->shuffled_key = shuffle("HelloWorld", store->shuffle_key, store->shuffle_key_format);
 
-	Password* password = construct_password();
-	unsigned int password_length = 50;
-	unsigned int password_length_bytes = password_length*(sizeof(unsigned long long)/sizeof(char));
-	unsigned char* password_bytes = generate_password_bytes(password_length_bytes);
-	//unsigned int password_length = 4;
-	//unsigned char password_bytes[4] = { 0x0, 0x1, 0x2, 0x3 };
-	write(store, password, password_bytes, password_length_bytes, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", password_length);
-	append_password(store, password, "Some Service");
+	Password* password = generate_password_and_append(store, "Some Service", FORMAT_AZaz09, 50);
 	char* plain_password_1 = read_plain(password);
 
 	Password* found_password = find(store, "Some Service");
