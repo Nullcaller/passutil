@@ -20,3 +20,9 @@ void generate_shuffle_key(char** key_var, char* key_format) {
 	free(key_remainder);
 	*key_var = key;
 }
+
+unsigned char* generate_password_bytes(unsigned int length) {
+	unsigned char* bytes = malloc(sizeof(unsigned char)*length);
+	randombytes_buf(bytes, length);
+	return bytes;
+}
