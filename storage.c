@@ -115,7 +115,7 @@ char* read_plain(Password* password) {
 	unsigned char* plain_password_bytes = read_bytes(password, &byte_length);
 
 	unsigned int modulo = strlen(password->format);
-	unsigned long symbol;
+	unsigned long long symbol;
 	size_t symbol_length, one_byte_length;
 	symbol_length = sizeof(symbol);
 	one_byte_length = sizeof(char);

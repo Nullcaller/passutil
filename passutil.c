@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
 	Password* password = construct_password();
 	unsigned int password_length = 50;
-	unsigned int password_length_bytes = password_length*(sizeof(unsigned long)/sizeof(char));
+	unsigned int password_length_bytes = password_length*(sizeof(unsigned long long)/sizeof(char));
 	unsigned char* password_bytes = generate_password_bytes(password_length_bytes);
 	//unsigned int password_length = 4;
 	//unsigned char password_bytes[4] = { 0x0, 0x1, 0x2, 0x3 };
