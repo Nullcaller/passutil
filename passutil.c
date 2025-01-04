@@ -86,5 +86,22 @@ int main(int argc, char* argv[]) {
 	printf("%s\n", plain_password_1);
 	printf("%s\n", plain_password_2);
 
+	unsigned int length;
+	char* metadata = serialize_metadata(store, &length);
+	printf("%d, %s\n", length, metadata);
+
+	//length = password->encrypted_byte_length;
+	//unsigned char* pseq = password->encrypted_password; 
+	unsigned char* pseq = serialize_password_sequence(store, &length);
+	for(unsigned int it = 0; it < length; it++) {
+		if(it % 10 == 0)
+			printf("%05d\t", it);
+		printf("%02X\t", pseq[it]);
+		if(it % 10 == 9)
+			printf("\n");
+	}
+
+	printf("\n");
+
 	return EXIT_CODE_SUCCESS;
 }
