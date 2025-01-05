@@ -7,6 +7,8 @@
 
 #include "shuffler.h"
 
+// TODO getpass implementation with ^C termination and exit
+
 int memorize_direct(char* shuffled_password, char* shuffle_key, char* shuffle_key_format) {
 	char* entered_password = getpass(MEMORIZER_DIRECT_PROMPT);
 	if(entered_password == NULL)
