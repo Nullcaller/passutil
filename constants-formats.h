@@ -1,5 +1,5 @@
-#ifndef FORMATS_H
-#define FORMATS_H
+#ifndef CONSTANTS_FORMATS_H
+#define CONSTANTS_FORMATS_H
 
 #define FORMAT_AZaz09 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 

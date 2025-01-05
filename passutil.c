@@ -14,8 +14,8 @@
 
 #include "passutil.h"
 
-#include "exit-codes.h"
-#include "formats.h"
+#include "constants-exit-codes.h"
+#include "constants-formats.h"
 
 #include "util.c"
 #include "shuffler.c"
