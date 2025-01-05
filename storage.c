@@ -444,12 +444,65 @@ Store* deserialize(unsigned char* serialized_metadata, unsigned int serialized_m
 	return store;
 }
 
-int save(Store* store, FILE* metadata_file, FILE* master_file) {
+bool save(Store* store, FILE* metadata_file, FILE* master_file) {
+	int max_attempts = 128;
 
+	unsigned char* serialized_metadata;
+	unsigned int serialized_metadata_length;
+
+	serialized_metadata = serialize_metadata(store, &serialized_metadata_length);
+
+	unsigned char* serialized_password_sequence;
+	unsigned int serialized_password_sequence_length;
+
+	serialized_password_sequence = serialize_password_sequence(store, &serialized_password_sequence_length);
+	
+	if(!writefile(metadata_file, max_attempts, serialized_metadata, serialized_metadata_length)) {
+		free(serialized_metadata);
+		free(serialized_password_sequence);
+		return false;
+	}
+
+	if(!writefile(master_file, max_attempts, serialized_password_sequence, serialized_password_sequence_length)) {
+		free(serialized_metadata);
+		free(serialized_password_sequence);
+		return false;
+	}
+
+	return true;
 }
 
-int load(FILE* metadata_file, FILE* master_file, Store** store) {
+bool load(FILE* metadata_file, FILE* master_file, Store** store) {
+	int max_attempts = 128;
+	unsigned int piece_length = 4096;
 
+	unsigned char* serialized_metadata;
+	unsigned int serialized_metadata_length;
+
+	if(!readfile(metadata_file, max_attempts, piece_length, &serialized_metadata, &serialized_metadata_length))
+		return false;
+
+	unsigned char* serialized_password_sequence;
+	unsigned int serialized_password_sequence_length;
+
+	if(!readfile(master_file, max_attempts, piece_length, &serialized_password_sequence, &serialized_password_sequence_length)) {
+		free(serialized_metadata);
+		return false;
+	}
+
+	printf("%d\n", serialized_password_sequence_length);
+
+	Store* _store = deserialize(serialized_metadata, serialized_metadata_length, serialized_password_sequence, serialized_password_sequence_length);
+
+	free(serialized_metadata);
+	free(serialized_password_sequence);
+
+	if(_store == NULL)
+		return false;
+
+	*store = _store;
+
+	return true;
 }
 
 Password* find(Store* store, char* identifier) {

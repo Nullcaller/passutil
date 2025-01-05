@@ -57,9 +57,9 @@ Password* deserialize_metadata_password(Store* store, unsigned char* serialized_
 
 Store* deserialize(unsigned char* serialized_metadata, unsigned int serialized_metadata_length, unsigned char* serialized_password_sequence, unsigned int serialized_password_sequence_length);
 
-int save(Store* store, FILE* metadata_file, FILE* master_file);
+bool save(Store* store, FILE* metadata_file, FILE* master_file);
 
-int load(FILE* metadata_file, FILE* master_file, Store** store);
+bool load(FILE* metadata_file, FILE* master_file, Store** store);
 
 Password* find(Store* store, char* identifier);
 
