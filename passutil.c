@@ -99,7 +99,22 @@ int main(int argc, char* argv[]) {
 
 	printf("\n");
 
-	Store* store_new = deserialize(metadata, sm_length, pseq, ps_length);
+	FILE* metadata_file = fopen("test.psmdf", "w+");
+	FILE* master_file = fopen("test.psmf", "w+");
+
+	save(store, metadata_file, master_file);
+
+	fflush(metadata_file);
+	fflush(master_file);
+
+	fclose(metadata_file);
+	fclose(master_file);
+
+	metadata_file = fopen("test.psmdf", "r");
+	master_file = fopen("test.psmf", "r");
+
+	Store* store_new;
+	load(metadata_file, master_file, &store_new);
 
 	Password* password_new = find(store_new, "Some Service");
 
@@ -120,7 +135,7 @@ int main(int argc, char* argv[]) {
 		printf("%02X\t", pseq[it]);
 		if(it % 10 == 9)
 			printf("\n");
-	}	
+	}
 
 	return EXIT_CODE_SUCCESS;
 }
