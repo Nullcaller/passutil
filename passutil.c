@@ -79,21 +79,17 @@ int main(int argc, char* argv[]) {
 
 	Password* password = generate_password_and_append(store, "Some Service", FORMAT_AZaz09, 50);
 	char* plain_password_1 = read_plain(password);
-
-	Password* found_password = find(store, "Some Service");
-	char* plain_password_2 = read_plain(found_password);
-
 	printf("%s\n", plain_password_1);
-	printf("%s\n", plain_password_2);
 
-	unsigned int length;
-	char* metadata = serialize_metadata(store, &length);
-	printf("%d, %s\n", length, metadata);
+	unsigned int sm_length;
+	char* metadata = serialize_metadata(store, &sm_length);
+	printf("%d:\n%s\n", sm_length, metadata);
 
 	//length = password->encrypted_byte_length;
 	//unsigned char* pseq = password->encrypted_password; 
-	unsigned char* pseq = serialize_password_sequence(store, &length);
-	for(unsigned int it = 0; it < length; it++) {
+	unsigned int ps_length;
+	unsigned char* pseq = serialize_password_sequence(store, &ps_length);
+	for(unsigned int it = 0; it < ps_length; it++) {
 		if(it % 10 == 0)
 			printf("%05d\t", it);
 		printf("%02X\t", pseq[it]);
@@ -102,6 +98,29 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("\n");
+
+	Store* store_new = deserialize(metadata, sm_length, pseq, ps_length);
+
+	Password* password_new = find(store_new, "Some Service");
+
+	store_new->shuffle_key_format = FORMAT_AZaz09;
+	generate_shuffle_key(&store_new->shuffle_key, store_new->shuffle_key_format);
+	store_new->shuffled_key = shuffle("HelloWorld", store_new->shuffle_key, store_new->shuffle_key_format);
+
+	char* plain_password_2 = read_plain(password_new);
+	printf("%s\n", plain_password_2);
+
+	metadata = serialize_metadata(store, &sm_length);
+	printf("%d:\n%s\n", sm_length, metadata);
+
+	pseq = serialize_password_sequence(store, &ps_length);
+	for(unsigned int it = 0; it < ps_length; it++) {
+		if(it % 10 == 0)
+			printf("%05d\t", it);
+		printf("%02X\t", pseq[it]);
+		if(it % 10 == 9)
+			printf("\n");
+	}	
 
 	return EXIT_CODE_SUCCESS;
 }
