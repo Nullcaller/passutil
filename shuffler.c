@@ -23,10 +23,18 @@ bool validate_shuffle_key(char* key, char* key_format) {
 	return isValid;
 }
 
+char shuffle_char(char character, char* key, char* key_format) {
+	return key[strchr(key_format, character)-key_format];
+}
+
+char unshuffle_char(char shuffled_character, char* key, char* key_format) {
+	return key_format[strchr(key, shuffled_character)-key];
+}
+
 void shuffle_in_place(char* plain_text, char* key, char* key_format) {
 	unsigned int it = 0;
 	while(plain_text[it] != '\0') {
-		plain_text[it] = key[strchr(key_format, plain_text[it])-key_format];
+		plain_text[it] = shuffle_char(plain_text[it], key, key_format);
 		it++;
 	}
 }
@@ -34,7 +42,7 @@ void shuffle_in_place(char* plain_text, char* key, char* key_format) {
 void unshuffle_in_place(char* shuffled_text, char* key, char* key_format) {
 	unsigned int it = 0;
 	while(shuffled_text[it] != '\0') {
-		shuffled_text[it] = key_format[strchr(key, shuffled_text[it])-key];
+		shuffled_text[it] = unshuffle_char(shuffled_text[it], key, key_format);
 		it++;
 	}
 }
