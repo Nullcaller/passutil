@@ -9,6 +9,19 @@
 
 #include "shuffler.h"
 
+int pseudosscanf(char* string, char* check_string) {
+	unsigned int length = strlen(check_string);
+
+	int read = 0;
+	for(unsigned int it = 0; it < length; it++)
+		if(string[it] == check_string[it])
+			read++;
+		else
+			break;
+
+	return read;
+}
+
 char* strcpymalloc(char* string) {
 	char* new_str = malloc(strlen(string)+1);
 	strcpy(new_str, string);
@@ -30,11 +43,31 @@ char* strappendrealloc(char* destination, unsigned int* destination_allocated_le
 
 	if((destination_length + source_length + 1) > *destination_allocated_length) {
 		unsigned int new_length = ((destination_length + source_length + 1)/piece_length+1)*piece_length;
-		destination = realloc(destination, new_length);
+		destination = realloc(destination, sizeof(char)*new_length);
 		*destination_allocated_length = new_length;
 	}
 
 	strcpy(destination+destination_length, source);
+	return destination;
+}
+
+char* strappendcharrealloc(char* destination, unsigned int* destination_allocated_length, unsigned int* current_destination_length, unsigned int piece_length, char source) {
+	if(destination == NULL) {
+		destination = malloc(sizeof(char)*piece_length);
+		*destination_allocated_length = sizeof(char)*piece_length;
+		*current_destination_length = 0;
+	}
+
+	if((current_destination_length+2) > *destination_allocated_length) {
+		unsigned int new_length = ((*current_destination_length+2)/piece_length+1)*piece_length;
+		destination = realloc(destination, sizeof(char)*new_length);
+		*destination_allocated_length = new_length;
+	}
+
+	*(destination+*current_destination_length) = source;
+	*(destination+*current_destination_length+1) = '\0';
+	*current_destination_length += 1;
+
 	return destination;
 }
 
