@@ -39,6 +39,8 @@ Consider this example: password = `ABE`, shuffle key = `DCFABE`, shuffle key for
 
 ## TODO
 
+* Achieve MVP state
+* Fix all memory leaks
 * Make use of libsodium's security features (secure mallocs, RAM managements and stuff)
 * Encrypt metadata with a separate password
 * Make more use of password shuffling
