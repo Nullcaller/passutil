@@ -19,6 +19,7 @@
 #include "shuffler.c"
 #include "generation.c"
 #include "storage.c"
+#include "memorizer.c"
 
 static int debug = false;
 static int interactive = false;
@@ -77,11 +78,11 @@ int main(int argc, char* argv[]) {
 	generate_shuffle_key(&store->shuffle_key, store->shuffle_key_format);
 	store->shuffled_key = shuffle("HelloWorld", store->shuffle_key, store->shuffle_key_format);
 
-	Password* password = generate_password_and_append(store, "Some Service", FORMAT_AZaz09, 50);
+	Password* password = generate_password_and_append(store, "Some Service", FORMAT_AZaz09, 10);
 	char* plain_password_1 = password_read_plain(password);
 	printf("%s\n", plain_password_1);
 
-	unsigned int sm_length;
+	/*unsigned int sm_length;
 	char* metadata = store_serialize_metadata(store, &sm_length);
 	printf("%d:\n%s\n", sm_length, metadata);
 
@@ -135,7 +136,16 @@ int main(int argc, char* argv[]) {
 		printf("%02X\t", pseq[it]);
 		if(it % 10 == 9)
 			printf("\n");
-	}
+	}*/
+
+	char* shuffle_key_format__ = FORMAT_AZaz09_symb_sp;
+	char* shuffle_key__;
+	generate_shuffle_key(&shuffle_key__, shuffle_key_format__);
+
+	char* shuffled_password = shuffle(plain_password_1, shuffle_key__, shuffle_key_format__);
+
+	//memorize_direct(shuffled_password, shuffle_key__, shuffle_key_format__);
+	memorize_by_symbols(shuffled_password, shuffle_key__, shuffle_key_format__, password->format, 2, true, false);
 
 	return EXIT_CODE_SUCCESS;
 }
