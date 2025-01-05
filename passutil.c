@@ -12,6 +12,8 @@
 #include<stdbool.h>
 #include<getopt.h>
 
+#include "passutil.h"
+
 #include "exit-codes.h"
 #include "formats.h"
 
@@ -20,9 +22,6 @@
 #include "generation.c"
 #include "storage.c"
 #include "memorizer.c"
-
-static int debug = false;
-static int interactive = false;
 
 int main(int argc, char* argv[]) {
 	/* OPTION PARSING */
