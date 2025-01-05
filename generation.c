@@ -32,12 +32,12 @@ unsigned char* generate_password_bytes(unsigned int length) {
 }
 
 Password* generate_password(Store* store, char* format, unsigned int length) {
-	Password* password = construct_password();
+	Password* password = password_construct();
 
 	unsigned int length_bytes = length*(sizeof(unsigned long long)/sizeof(char));
 	unsigned char* plain_password_bytes = generate_password_bytes(length_bytes);
 	
-	write(store, password, plain_password_bytes, length_bytes, format, length);
+	passsword_write(store, password, plain_password_bytes, length_bytes, format, length);
 	
 	free(plain_password_bytes);
 	return password;
@@ -46,7 +46,7 @@ Password* generate_password(Store* store, char* format, unsigned int length) {
 Password* generate_password_and_append(Store* store, char* identifier, char* format, unsigned int length) {
 	Password* password = generate_password(store, format, length);
 
-	append_password(store, password, identifier);
+	store_append_password(store, password, identifier);
 
 	return password;
 }

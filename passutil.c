@@ -71,24 +71,24 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	Store* store = construct_store();
+	Store* store = store_construct();
 	store->algorithm = "AES256";
 	store->shuffle_key_format = FORMAT_AZaz09;
 	generate_shuffle_key(&store->shuffle_key, store->shuffle_key_format);
 	store->shuffled_key = shuffle("HelloWorld", store->shuffle_key, store->shuffle_key_format);
 
 	Password* password = generate_password_and_append(store, "Some Service", FORMAT_AZaz09, 50);
-	char* plain_password_1 = read_plain(password);
+	char* plain_password_1 = password_read_plain(password);
 	printf("%s\n", plain_password_1);
 
 	unsigned int sm_length;
-	char* metadata = serialize_metadata(store, &sm_length);
+	char* metadata = store_serialize_metadata(store, &sm_length);
 	printf("%d:\n%s\n", sm_length, metadata);
 
 	//length = password->encrypted_byte_length;
 	//unsigned char* pseq = password->encrypted_password; 
 	unsigned int ps_length;
-	unsigned char* pseq = serialize_password_sequence(store, &ps_length);
+	unsigned char* pseq = store_serialize_password_sequence(store, &ps_length);
 	for(unsigned int it = 0; it < ps_length; it++) {
 		if(it % 10 == 0)
 			printf("%05d\t", it);
@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
 	FILE* metadata_file = fopen("test.psmdf", "w+");
 	FILE* master_file = fopen("test.psmf", "w+");
 
-	save(store, metadata_file, master_file);
+	store_save(store, metadata_file, master_file);
 
 	fflush(metadata_file);
 	fflush(master_file);
@@ -114,21 +114,21 @@ int main(int argc, char* argv[]) {
 	master_file = fopen("test.psmf", "r");
 
 	Store* store_new;
-	load(metadata_file, master_file, &store_new);
+	store_load(metadata_file, master_file, &store_new);
 
-	Password* password_new = find(store_new, "Some Service");
+	Password* password_new = store_find_password(store_new, "Some Service");
 
 	store_new->shuffle_key_format = FORMAT_AZaz09;
 	generate_shuffle_key(&store_new->shuffle_key, store_new->shuffle_key_format);
 	store_new->shuffled_key = shuffle("HelloWorld", store_new->shuffle_key, store_new->shuffle_key_format);
 
-	char* plain_password_2 = read_plain(password_new);
+	char* plain_password_2 = password_read_plain(password_new);
 	printf("%s\n", plain_password_2);
 
-	metadata = serialize_metadata(store, &sm_length);
+	metadata = store_serialize_metadata(store, &sm_length);
 	printf("%d:\n%s\n", sm_length, metadata);
 
-	pseq = serialize_password_sequence(store, &ps_length);
+	pseq = store_serialize_password_sequence(store, &ps_length);
 	for(unsigned int it = 0; it < ps_length; it++) {
 		if(it % 10 == 0)
 			printf("%05d\t", it);

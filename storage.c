@@ -9,7 +9,7 @@
 #include "util.h"
 #include "shuffler.h"
 
-Store* construct_store() {
+Store* store_construct() {
 	Store* new_store = malloc(sizeof(Store));
 	new_store->algorithm = NULL;
 	new_store->shuffled_key = NULL;
@@ -25,7 +25,7 @@ Store* construct_store() {
 	return new_store;
 }
 
-Password* construct_password() {
+Password* password_construct() {
 	Password* new_password = malloc(sizeof(Password));
 	new_password->store = NULL;
 	new_password->identifier = NULL;
@@ -37,7 +37,7 @@ Password* construct_password() {
 	return new_password;
 }
 
-bool append_password(Store* store, Password* password, char* identifier) {
+bool store_append_password(Store* store, Password* password, char* identifier) {
 	if(password->store != NULL)
 		return false;
 	password->store = store;
@@ -61,7 +61,7 @@ bool append_password(Store* store, Password* password, char* identifier) {
 	return true;
 }
 
-Password* remove_password(Store* store, unsigned long password_index) {
+Password* store_remove_password(Store* store, unsigned long password_index) {
 	unsigned long new_password_count = store->password_count-1;
 	Password** new_passwords = malloc(sizeof(Password*)*new_password_count);
 
@@ -86,7 +86,7 @@ Password* remove_password(Store* store, unsigned long password_index) {
 	return removed;
 }
 
-unsigned char* serialize_metadata(Store* store, unsigned int* length) {
+unsigned char* store_serialize_metadata(Store* store, unsigned int* length) {
 	unsigned int piece_length = 4096;
 	unsigned int buffer_length = 4096;
 
@@ -117,7 +117,7 @@ unsigned char* serialize_metadata(Store* store, unsigned int* length) {
 	return serialized_metadata;
 }
 
-unsigned char* serialize_password_sequence(Store* store, unsigned int* length) {
+unsigned char* store_serialize_password_sequence(Store* store, unsigned int* length) {
 	Password** passwords = store->passwords;
 	unsigned long password_count = store->password_count;
 
@@ -136,7 +136,7 @@ unsigned char* serialize_password_sequence(Store* store, unsigned int* length) {
 	return serialized_password_sequence;
 }
 
-bool parse_field_forced_len(unsigned char* string, unsigned int max_length, unsigned int* position, char* field_name, char** field_value, long forced_field_length) {
+bool store_parse_field_forced_len(unsigned char* string, unsigned int max_length, unsigned int* position, char* field_name, char** field_value, long forced_field_length) {
 	char* _field_value = NULL;
 	unsigned int allocated_field_length = 0;
 	unsigned int current_field_length = 0;
@@ -207,11 +207,11 @@ bool parse_field_forced_len(unsigned char* string, unsigned int max_length, unsi
 	return true;
 } 
 
-bool parse_field(unsigned char* string, unsigned int max_length, unsigned int* position, char* field_name, char** field_value) {
-	return parse_field_forced_len(string, max_length, position, field_name, field_value, -1);
+bool store_parse_field(unsigned char* string, unsigned int max_length, unsigned int* position, char* field_name, char** field_value) {
+	return store_parse_field_forced_len(string, max_length, position, field_name, field_value, -1);
 }
 
-bool parse_metadata_store_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** algorithm, bool* key_verifiable, char** key_verification_algorithm, unsigned long* key_verification_algorithm_rounds, char** key_verification_salt, char** key_verification_text, unsigned long* password_count) {
+bool store_parse_metadata_store_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** algorithm, bool* key_verifiable, char** key_verification_algorithm, unsigned long* key_verification_algorithm_rounds, char** key_verification_salt, char** key_verification_text, unsigned long* password_count) {
 	unsigned char* smp = serialized_metadata+*position;
 
 	char* _cv;
@@ -229,17 +229,17 @@ bool parse_metadata_store_string(unsigned char* serialized_metadata, unsigned in
 	unsigned int posadd = 0;
 	char* read_str;
 
-	if(!parse_field(smp, length-*position-posadd, &posadd, "cv", &_cv))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "cv", &_cv))
 		return false;
 	
 	// Check container version
 	if(strcmp(_cv, "1.0") != 0)
 		return false;
 
-	if(!parse_field(smp, length-*position-posadd, &posadd, "algo", &_algorithm))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "algo", &_algorithm))
 		return false;
 
-	if(!parse_field(smp, length-*position-posadd, &posadd, "keyverif", &_key_verifiable_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverif", &_key_verifiable_string))
 		return false;
 
 	if(strcmp(_key_verifiable_string, "true") == 0)
@@ -251,20 +251,20 @@ bool parse_metadata_store_string(unsigned char* serialized_metadata, unsigned in
 
 	if(_key_verifiable) {
 
-		if(!parse_field(smp, length-*position-posadd, &posadd, "keyverifalgo", &_key_verification_algorithm))
+		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifalgo", &_key_verification_algorithm))
 			return false;
 
-		if(!parse_field(smp, length-*position-posadd, &posadd, "keyverifrounds", &_key_verification_algorithm_rounds_string))
+		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifrounds", &_key_verification_algorithm_rounds_string))
 			return false;
 
 		_key_verification_algorithm_rounds = strtoul(_key_verification_algorithm_rounds_string, &read_str, 10);
 		if((_key_verification_algorithm_rounds == 0) && ((read_str-_key_verification_algorithm_rounds_string) != strlen(_key_verification_algorithm_rounds_string)))
 			return false;
 
-		if(!parse_field(smp, length-*position-posadd, &posadd, "keyverifsalt", &_key_verification_salt))
+		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifsalt", &_key_verification_salt))
 			return false;
 
-		if(!parse_field(smp, length-*position-posadd, &posadd, "keyverifsig", &_key_verification_text))
+		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifsig", &_key_verification_text))
 			return false;
 	
 	} else {
@@ -274,7 +274,7 @@ bool parse_metadata_store_string(unsigned char* serialized_metadata, unsigned in
 		_key_verification_text = NULL;
 	}
 
-	if(!parse_field(smp, length-*position-posadd, &posadd, "passcount", &_password_count_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "passcount", &_password_count_string))
 		return false;
 
 	_password_count = strtoul(_password_count_string, &read_str, 10);
@@ -298,7 +298,7 @@ bool parse_metadata_store_string(unsigned char* serialized_metadata, unsigned in
 	return true;
 }
 
-bool parse_metadata_password_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** identifier, unsigned short* password_length, unsigned short* password_byte_length, unsigned short* password_encrypted_byte_length, char** format) {
+bool store_parse_metadata_password_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** identifier, unsigned short* password_length, unsigned short* password_byte_length, unsigned short* password_encrypted_byte_length, char** format) {
 	unsigned char* smp = serialized_metadata+*position;
 	
 	char* _identifier;
@@ -315,38 +315,38 @@ bool parse_metadata_password_string(unsigned char* serialized_metadata, unsigned
 	unsigned int posadd = 0;
 	char* read_str;
 
-	if(!parse_field(smp, length-*position-posadd, &posadd, "identifier", &_identifier))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "identifier", &_identifier))
 		return false;
 	
-	if(!parse_field(smp, length-*position-posadd, &posadd, "encbytelen", &_password_encrypted_byte_length_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "encbytelen", &_password_encrypted_byte_length_string))
 		return false;
 
 	_password_encrypted_byte_length = (unsigned short) strtoul(_password_encrypted_byte_length_string, &read_str, 10);
 	if((_password_encrypted_byte_length == 0) && ((read_str-_password_encrypted_byte_length_string) != strlen(_password_encrypted_byte_length_string)))
 		return false;
 
-	if(!parse_field(smp, length-*position-posadd, &posadd, "bytelen", &_password_byte_lenth_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "bytelen", &_password_byte_lenth_string))
 		return false;
 
 	_password_byte_length = (unsigned short) strtoul(_password_byte_lenth_string, &read_str, 10);
 	if((_password_byte_length == 0) && ((read_str-_password_byte_lenth_string) != strlen(_password_byte_lenth_string)))
 		return false;
 
-	if(!parse_field(smp, length-*position-posadd, &posadd, "len", &_password_length_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "len", &_password_length_string))
 		return false;
 	
 	_password_length = (unsigned short) strtoul(_password_length_string, &read_str, 10);
 	if((_password_length == 0) && ((read_str-_password_length_string) != strlen(_password_length_string)))
 		return false;
 		
-	if(!parse_field(smp, length-*position-posadd, &posadd, "formatlen", &format_length_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "formatlen", &format_length_string))
 		return false;
 
 	format_length = strtoul(format_length_string, &read_str, 10);
 	if((format_length == 0) && ((read_str-format_length_string) != strlen(format_length_string)))
 		return false;
 
-	if(!parse_field_forced_len(smp, length-*position-posadd, &posadd, "format", &_format, format_length))
+	if(!store_parse_field_forced_len(smp, length-*position-posadd, &posadd, "format", &_format, format_length))
 		return false;
 
 	if(length-*position-posadd > 0)
@@ -362,8 +362,8 @@ bool parse_metadata_password_string(unsigned char* serialized_metadata, unsigned
 	return true;
 }
 
-Store* deserialize_metadata_store(unsigned char* serialized_metadata, unsigned int length, unsigned int* position) {
-	Store* store = construct_store();
+Store* store_deserialize_metadata_store(unsigned char* serialized_metadata, unsigned int length, unsigned int* position) {
+	Store* store = store_construct();
 
 	char* algorithm;
 	bool key_verifiable;
@@ -373,7 +373,7 @@ Store* deserialize_metadata_store(unsigned char* serialized_metadata, unsigned i
 	char* key_verification_text;
 	unsigned long password_count;
 
-	if(!parse_metadata_store_string(serialized_metadata, length, position, &algorithm, &key_verifiable, &key_verification_algorithm, &key_verification_algorithm_rounds, &key_verification_salt, &key_verification_text, &password_count))
+	if(!store_parse_metadata_store_string(serialized_metadata, length, position, &algorithm, &key_verifiable, &key_verification_algorithm, &key_verification_algorithm_rounds, &key_verification_salt, &key_verification_text, &password_count))
 		return NULL;
 
 	store->algorithm = algorithm;
@@ -387,8 +387,8 @@ Store* deserialize_metadata_store(unsigned char* serialized_metadata, unsigned i
 	return store;
 }
 
-Password* deserialize_metadata_password(Store* store, unsigned char* serialized_metadata, unsigned int length, unsigned int* position) {
-	Password* password = construct_password();
+Password* store_deserialize_metadata_password(Store* store, unsigned char* serialized_metadata, unsigned int length, unsigned int* position) {
+	Password* password = password_construct();
 	password->store = store;
 
 	char* identifier;
@@ -397,7 +397,7 @@ Password* deserialize_metadata_password(Store* store, unsigned char* serialized_
 	unsigned short password_encrypted_byte_length;
 	char* format;
 
-	if(!parse_metadata_password_string(serialized_metadata, length, position, &identifier, &password_length, &password_byte_length, &password_encrypted_byte_length, &format))
+	if(!store_parse_metadata_password_string(serialized_metadata, length, position, &identifier, &password_length, &password_byte_length, &password_encrypted_byte_length, &format))
 		return NULL;
 
 	password->identifier = identifier;
@@ -409,10 +409,10 @@ Password* deserialize_metadata_password(Store* store, unsigned char* serialized_
 	return password;
 }
 
-Store* deserialize(unsigned char* serialized_metadata, unsigned int serialized_metadata_length, unsigned char* serialized_password_sequence, unsigned int serialized_password_sequence_length) {
+Store* store_deserialize(unsigned char* serialized_metadata, unsigned int serialized_metadata_length, unsigned char* serialized_password_sequence, unsigned int serialized_password_sequence_length) {
 	unsigned int position = 0;
 
-	Store* store = deserialize_metadata_store(serialized_metadata, serialized_metadata_length, &position);
+	Store* store = store_deserialize_metadata_store(serialized_metadata, serialized_metadata_length, &position);
 
 	if(store == NULL)
 		return NULL;
@@ -422,7 +422,7 @@ Store* deserialize(unsigned char* serialized_metadata, unsigned int serialized_m
 	unsigned int bytepos = 0;
 
 	for(unsigned long it = 0; it < store->password_count; it++) {
-		password = deserialize_metadata_password(store, serialized_metadata, serialized_metadata_length, &position);
+		password = store_deserialize_metadata_password(store, serialized_metadata, serialized_metadata_length, &position);
 
 		if(password == NULL)
 			return NULL;
@@ -444,18 +444,18 @@ Store* deserialize(unsigned char* serialized_metadata, unsigned int serialized_m
 	return store;
 }
 
-bool save(Store* store, FILE* metadata_file, FILE* master_file) {
+bool store_save(Store* store, FILE* metadata_file, FILE* master_file) {
 	int max_attempts = 128;
 
 	unsigned char* serialized_metadata;
 	unsigned int serialized_metadata_length;
 
-	serialized_metadata = serialize_metadata(store, &serialized_metadata_length);
+	serialized_metadata = store_serialize_metadata(store, &serialized_metadata_length);
 
 	unsigned char* serialized_password_sequence;
 	unsigned int serialized_password_sequence_length;
 
-	serialized_password_sequence = serialize_password_sequence(store, &serialized_password_sequence_length);
+	serialized_password_sequence = store_serialize_password_sequence(store, &serialized_password_sequence_length);
 	
 	if(!writefile(metadata_file, max_attempts, serialized_metadata, serialized_metadata_length)) {
 		free(serialized_metadata);
@@ -472,7 +472,7 @@ bool save(Store* store, FILE* metadata_file, FILE* master_file) {
 	return true;
 }
 
-bool load(FILE* metadata_file, FILE* master_file, Store** store) {
+bool store_load(FILE* metadata_file, FILE* master_file, Store** store) {
 	int max_attempts = 128;
 	unsigned int piece_length = 4096;
 
@@ -492,7 +492,7 @@ bool load(FILE* metadata_file, FILE* master_file, Store** store) {
 
 	printf("%d\n", serialized_password_sequence_length);
 
-	Store* _store = deserialize(serialized_metadata, serialized_metadata_length, serialized_password_sequence, serialized_password_sequence_length);
+	Store* _store = store_deserialize(serialized_metadata, serialized_metadata_length, serialized_password_sequence, serialized_password_sequence_length);
 
 	free(serialized_metadata);
 	free(serialized_password_sequence);
@@ -505,25 +505,25 @@ bool load(FILE* metadata_file, FILE* master_file, Store** store) {
 	return true;
 }
 
-Password* find(Store* store, char* identifier) {
+Password* store_find_password(Store* store, char* identifier) {
 	for(unsigned long it = 0; it < store->password_count; it++)
 		if(strcmp(identifier, store->passwords[it]->identifier) == 0)
 			return store->passwords[it];
 	return NULL;
 }
 
-unsigned char* read_bytes(Password* password, unsigned int* byte_length) {
+unsigned char* password_read_bytes(Password* password, unsigned int* byte_length) {
 	unsigned char* plain_password_bytes = decrypt(password->store->algorithm, password->encrypted_password, password->byte_length, password->store->shuffled_key, password->store->shuffle_key, password->store->shuffle_key_format);
 	*byte_length = password->byte_length;
 	return plain_password_bytes;
 }
 
-char* read_plain(Password* password) {
+char* password_read_plain(Password* password) {
 	char* plain_password = malloc(sizeof(char)*(password->length+1));
 	plain_password[password->length] = '\0';
 
 	unsigned int byte_length;
-	unsigned char* plain_password_bytes = read_bytes(password, &byte_length);
+	unsigned char* plain_password_bytes = password_read_bytes(password, &byte_length);
 
 	unsigned int modulo = strlen(password->format);
 	unsigned long long symbol;
@@ -544,7 +544,7 @@ char* read_plain(Password* password) {
 	return plain_password;
 }
 
-bool write(Store* store, Password* password, unsigned char* plain_password_bytes, unsigned short byte_length, char* format, unsigned short length) {
+bool passsword_write(Store* store, Password* password, unsigned char* plain_password_bytes, unsigned short byte_length, char* format, unsigned short length) {
 	if(password->encrypted_password != NULL) 
 		return false;
 
@@ -561,7 +561,7 @@ bool write(Store* store, Password* password, unsigned char* plain_password_bytes
 	return true;
 }
 
-bool copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
+bool store_copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
 	if(store->key_verifiable) {
 		//char* key = unshuffle(shuffled_key, shuffle_key, shuffle_key_format);
 
@@ -579,7 +579,7 @@ bool copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, ch
 	return true;
 }
 
-void remove_key_and_dispose(Store* store) {
+void store_remove_key_and_dispose(Store* store) {
 	char* shuffled_key = store->shuffled_key;
 	char* shuffle_key = store->shuffle_key;
 	char* shuffle_key_format = store->shuffle_key_format;
