@@ -3,6 +3,11 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+/* CONSTANTS */
+
+#define STORAGE_EXTENSION_METADATA ".psmdf"
+#define STORAGE_EXTENSION_MASTER ".psmf"
+
 /* TYPE DECLARATIONS */
 
 typedef struct store Store;
