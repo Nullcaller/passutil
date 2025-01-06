@@ -3,5 +3,6 @@
 
 static int debug = false;
 static int interactive = false;
+static int quiet = false;
 
 #endif

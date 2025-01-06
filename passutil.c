@@ -30,13 +30,14 @@ int main(int argc, char* argv[]) {
 	static struct option long_options[] = {
     	{ "debug",			no_argument,	&debug,			true },
 		{ "interactive",	no_argument,	&interactive,	true },
+		{ "quiet",			no_argument,	&quiet,			true },
     	{ 0, 0, 0, 0 }
     };
 
 	while(true) {
 		option_index = 0;
 
-		option = getopt_long(argc, argv, "di", long_options, &option_index);
+		option = getopt_long(argc, argv, "diq", long_options, &option_index);
 
 		if(debug && option != 0 && option != -1)
 			printf("Parsing option: %c (%d)\n", option, option);
@@ -59,6 +60,8 @@ int main(int argc, char* argv[]) {
 			case 'i':
 				interactive = true;
 				break;
+			case 'q':
+				quiet = true;
 			case '?':
 				if(debug)
 					printf("Argument error while parsing option: %d\n", option);
