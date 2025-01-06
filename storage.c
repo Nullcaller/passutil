@@ -37,11 +37,29 @@ Password* password_construct() {
 	return new_password;
 }
 
+void store_destroy(Store* store) {
+	free(store->algorithm);
+	free(store->shuffled_key);
+	free(store->shuffle_key);
+	free(store->shuffle_key_format);
+	free(store->key_verification_algorithm);
+	free(store->key_verification_salt);
+	free(store->key_verification_text);
+	free(store);
+}
+
+void password_destroy(Password* password) {
+	free(password->identifier);
+	free(password->format);
+	free(password->encrypted_password);
+	free(password);
+}
+
 bool store_append_password(Store* store, Password* password, char* identifier) {
 	if(password->store != NULL)
 		return false;
 	password->store = store;
-	password->identifier = identifier;
+	password->identifier = strcpymalloc(identifier);
 
 	unsigned long new_password_count = store->password_count+1;
 	Password** new_passwords = malloc(sizeof(Password*)*new_password_count);
@@ -114,6 +132,7 @@ unsigned char* store_serialize_metadata(Store* store, unsigned int* length) {
 	serialized_metadata = strtrimrealloc(serialized_metadata, &sml);
 	*length = sml;
 
+	free(buffer);
 	return serialized_metadata;
 }
 
@@ -166,14 +185,21 @@ bool store_parse_field_forced_len(unsigned char* string, unsigned int max_length
 	if(forced_field_length < 0) {
 		posbuf = 0;
 		while(*(strp+posadd+posbuf) != '`') {
-			if(posadd+posbuf > max_length)
+			if(posadd+posbuf > max_length) {
+				if(allocated_field_length > 0)
+					free(_field_value);
 				return false;
-			if(*(strp+posadd+posbuf) == '\0')
+			}
+			if(*(strp+posadd+posbuf) == '\0') {
+				if(allocated_field_length > 0)
+					free(_field_value);
 				return false;
+			}
 			_field_value = strappendcharrealloc(_field_value, &allocated_field_length, &current_field_length, piece_length, *(strp+posadd+posbuf));
 			posbuf++;
 		}
 		_field_value = strappendcharrealloc(_field_value, &allocated_field_length, &current_field_length, piece_length, '\0');
+		_field_value = strtrimrealloc(_field_value, &allocated_field_length);
 		posadd += posbuf;
 	} else if(forced_field_length == 0) {
 		_field_value = malloc(sizeof(char));
@@ -187,16 +213,22 @@ bool store_parse_field_forced_len(unsigned char* string, unsigned int max_length
 		posadd += forced_field_length;
 	}
 
-	if(posadd > max_length)
+	if(posadd > max_length) {
+		free(_field_value);
 		return false;
+	}
 
 	posbuf = pseudosscanf(strp+posadd, "`");
-	if(posbuf != 1)
+	if(posbuf != 1) {
+		free(_field_value);
 		return false;
+	}
 	posadd += posbuf;
 
-	if(posadd > max_length)
+	if(posadd > max_length) {
+		free(_field_value);
 		return false;
+	}
 
 	if(posadd < max_length)
 		posadd += pseudosscanf(strp+posadd, ","); // Eat the ',' if available
@@ -233,39 +265,73 @@ bool store_parse_metadata_store_string(unsigned char* serialized_metadata, unsig
 		return false;
 	
 	// Check container version
-	if(strcmp(_cv, "1.0") != 0)
+	if(strcmp(_cv, "1.0") != 0) {
+		free(_cv);
 		return false;
+	}
 
-	if(!store_parse_field(smp, length-*position-posadd, &posadd, "algo", &_algorithm))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "algo", &_algorithm)) {
+		free(_cv);
 		return false;
+	}
 
-	if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverif", &_key_verifiable_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverif", &_key_verifiable_string)) {
+		free(_cv);
+		free(_algorithm);
 		return false;
+	}
 
 	if(strcmp(_key_verifiable_string, "true") == 0)
 		_key_verifiable = true;
 	else if(strcmp(_key_verifiable_string, "false") == 0)
 		_key_verifiable = false;
-	else
+	else {
+		free(_cv);
+		free(_algorithm);
+		free(_key_verifiable_string);
 		return false;
+	}
+	free(_key_verifiable_string);
 
 	if(_key_verifiable) {
 
-		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifalgo", &_key_verification_algorithm))
+		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifalgo", &_key_verification_algorithm)) {
+			free(_cv);
+			free(_algorithm);
 			return false;
+		}
 
-		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifrounds", &_key_verification_algorithm_rounds_string))
+		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifrounds", &_key_verification_algorithm_rounds_string)) {
+			free(_cv);
+			free(_algorithm);
+			free(_key_verification_algorithm);
 			return false;
+		}
 
 		_key_verification_algorithm_rounds = strtoul(_key_verification_algorithm_rounds_string, &read_str, 10);
-		if((_key_verification_algorithm_rounds == 0) && ((read_str-_key_verification_algorithm_rounds_string) != strlen(_key_verification_algorithm_rounds_string)))
+		if((_key_verification_algorithm_rounds == 0) && ((read_str-_key_verification_algorithm_rounds_string) != strlen(_key_verification_algorithm_rounds_string))) {
+			free(_cv);
+			free(_algorithm);
+			free(_key_verification_algorithm);
+			free(_key_verification_algorithm_rounds_string);
 			return false;
+		}
+		free(_key_verification_algorithm_rounds_string);
 
-		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifsalt", &_key_verification_salt))
+		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifsalt", &_key_verification_salt)) {
+			free(_cv);
+			free(_algorithm);
+			free(_key_verification_algorithm);
 			return false;
+		}
 
-		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifsig", &_key_verification_text))
+		if(!store_parse_field(smp, length-*position-posadd, &posadd, "keyverifsig", &_key_verification_text)) {
+			free(_cv);
+			free(_algorithm);
+			free(_key_verification_algorithm);
+			free(_key_verification_salt);
 			return false;
+		}
 	
 	} else {
 		_key_verification_algorithm = NULL;
@@ -274,16 +340,41 @@ bool store_parse_metadata_store_string(unsigned char* serialized_metadata, unsig
 		_key_verification_text = NULL;
 	}
 
-	if(!store_parse_field(smp, length-*position-posadd, &posadd, "passcount", &_password_count_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "passcount", &_password_count_string)) {
+		free(_cv);
+		free(_algorithm);
+		if(_key_verifiable) {
+			free(_key_verification_algorithm);
+			free(_key_verification_salt);
+			free(_key_verification_text);
+		}
 		return false;
+	}
 
 	_password_count = strtoul(_password_count_string, &read_str, 10);
-	if((_password_count == 0) && ((read_str-_password_count_string) != strlen(_password_count_string)))
+	if((_password_count == 0) && ((read_str-_password_count_string) != strlen(_password_count_string))) {
+		free(_cv);
+		free(_algorithm);
+		if(_key_verifiable) {
+			free(_key_verification_algorithm);
+			free(_key_verification_salt);
+			free(_key_verification_text);
+		}
+		free(_password_count_string);
 		return false;
+	}
+	free(_password_count_string);
 
-	if((pseudosscanf(smp+posadd, "\n") != 1) && (_password_count != 0)) // Eat the newline if possible
+	if((pseudosscanf(smp+posadd, "\n") != 1) && (_password_count != 0)) { // Eat the newline if possible
+		free(_cv);
+		free(_algorithm);
+		if(_key_verifiable) {
+			free(_key_verification_algorithm);
+			free(_key_verification_salt);
+			free(_key_verification_text);
+		}
 		return false;
-	else
+	} else
 		posadd += 1;
 
 	*algorithm = _algorithm;
@@ -295,6 +386,7 @@ bool store_parse_metadata_store_string(unsigned char* serialized_metadata, unsig
 	*password_count = _password_count;
 	*position += posadd;
 
+	free(_cv);
 	return true;
 }
 
@@ -304,7 +396,7 @@ bool store_parse_metadata_password_string(unsigned char* serialized_metadata, un
 	char* _identifier;
 	char* _password_length_string;
 	unsigned short _password_length;
-	char* _password_byte_lenth_string;
+	char* _password_byte_length_string;
 	unsigned short _password_byte_length;
 	char* _password_encrypted_byte_length_string;
 	unsigned short _password_encrypted_byte_length;
@@ -318,36 +410,62 @@ bool store_parse_metadata_password_string(unsigned char* serialized_metadata, un
 	if(!store_parse_field(smp, length-*position-posadd, &posadd, "identifier", &_identifier))
 		return false;
 	
-	if(!store_parse_field(smp, length-*position-posadd, &posadd, "encbytelen", &_password_encrypted_byte_length_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "encbytelen", &_password_encrypted_byte_length_string)) {
+		free(_identifier);
 		return false;
+	}
 
 	_password_encrypted_byte_length = (unsigned short) strtoul(_password_encrypted_byte_length_string, &read_str, 10);
-	if((_password_encrypted_byte_length == 0) && ((read_str-_password_encrypted_byte_length_string) != strlen(_password_encrypted_byte_length_string)))
+	if((_password_encrypted_byte_length == 0) && ((read_str-_password_encrypted_byte_length_string) != strlen(_password_encrypted_byte_length_string))) {
+		free(_identifier);
+		free(_password_encrypted_byte_length_string);
 		return false;
+	}
+	free(_password_encrypted_byte_length_string);
 
-	if(!store_parse_field(smp, length-*position-posadd, &posadd, "bytelen", &_password_byte_lenth_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "bytelen", &_password_byte_length_string)) {
+		free(_identifier);
 		return false;
+	}
 
-	_password_byte_length = (unsigned short) strtoul(_password_byte_lenth_string, &read_str, 10);
-	if((_password_byte_length == 0) && ((read_str-_password_byte_lenth_string) != strlen(_password_byte_lenth_string)))
+	_password_byte_length = (unsigned short) strtoul(_password_byte_length_string, &read_str, 10);
+	if((_password_byte_length == 0) && ((read_str-_password_byte_length_string) != strlen(_password_byte_length_string))) {
+		free(_identifier);
+		free(_password_byte_length_string);
 		return false;
+	}
+	free(_password_byte_length_string);
 
-	if(!store_parse_field(smp, length-*position-posadd, &posadd, "len", &_password_length_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "len", &_password_length_string)) {
+		free(_identifier);
 		return false;
+	}
 	
 	_password_length = (unsigned short) strtoul(_password_length_string, &read_str, 10);
-	if((_password_length == 0) && ((read_str-_password_length_string) != strlen(_password_length_string)))
+	if((_password_length == 0) && ((read_str-_password_length_string) != strlen(_password_length_string))) {
+		free(_identifier);
+		free(_password_length_string);
 		return false;
+	}
+	free(_password_length_string);
 		
-	if(!store_parse_field(smp, length-*position-posadd, &posadd, "formatlen", &format_length_string))
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "formatlen", &format_length_string)) {
+		free(_identifier);
 		return false;
+	}
 
 	format_length = strtoul(format_length_string, &read_str, 10);
-	if((format_length == 0) && ((read_str-format_length_string) != strlen(format_length_string)))
+	if((format_length == 0) && ((read_str-format_length_string) != strlen(format_length_string))) {
+		free(_identifier);
+		free(format_length_string);
 		return false;
+	}
+	free(format_length_string);
 
-	if(!store_parse_field_forced_len(smp, length-*position-posadd, &posadd, "format", &_format, format_length))
+	if(!store_parse_field_forced_len(smp, length-*position-posadd, &posadd, "format", &_format, format_length)) {
+		free(_identifier);
 		return false;
+	}
 
 	if(length-*position-posadd > 0)
 		posadd += pseudosscanf(smp+posadd, "\n"); // Eat the newline if available
@@ -365,24 +483,8 @@ bool store_parse_metadata_password_string(unsigned char* serialized_metadata, un
 Store* store_deserialize_metadata_store(unsigned char* serialized_metadata, unsigned int length, unsigned int* position) {
 	Store* store = store_construct();
 
-	char* algorithm;
-	bool key_verifiable;
-	char* key_verification_algorithm;
-	unsigned long key_verification_algorithm_rounds;
-	char* key_verification_salt;
-	char* key_verification_text;
-	unsigned long password_count;
-
-	if(!store_parse_metadata_store_string(serialized_metadata, length, position, &algorithm, &key_verifiable, &key_verification_algorithm, &key_verification_algorithm_rounds, &key_verification_salt, &key_verification_text, &password_count))
+	if(!store_parse_metadata_store_string(serialized_metadata, length, position, &store->algorithm, &store->key_verifiable, &store->key_verification_algorithm, &store->key_verification_algorithm_rounds, &store->key_verification_salt, &store->key_verification_text, &store->password_count))
 		return NULL;
-
-	store->algorithm = algorithm;
-	store->key_verifiable = key_verifiable;
-	store->key_verification_algorithm = key_verification_algorithm;
-	store->key_verification_algorithm_rounds = key_verification_algorithm_rounds;
-	store->key_verification_salt = key_verification_salt;
-	store->key_verification_text = key_verification_text;
-	store->password_count = password_count;
 
 	return store;
 }
@@ -391,20 +493,8 @@ Password* store_deserialize_metadata_password(Store* store, unsigned char* seria
 	Password* password = password_construct();
 	password->store = store;
 
-	char* identifier;
-	unsigned short password_length;
-	unsigned short password_byte_length;
-	unsigned short password_encrypted_byte_length;
-	char* format;
-
-	if(!store_parse_metadata_password_string(serialized_metadata, length, position, &identifier, &password_length, &password_byte_length, &password_encrypted_byte_length, &format))
+	if(!store_parse_metadata_password_string(serialized_metadata, length, position, &password->identifier, &password->length, &password->byte_length, &password->encrypted_byte_length, &password->format))
 		return NULL;
-
-	password->identifier = identifier;
-	password->length = password_length;
-	password->byte_length = password_byte_length;
-	password->encrypted_byte_length = password_encrypted_byte_length;
-	password->format = format;
 
 	return password;
 }
@@ -424,13 +514,24 @@ Store* store_deserialize(unsigned char* serialized_metadata, unsigned int serial
 	for(unsigned long it = 0; it < store->password_count; it++) {
 		password = store_deserialize_metadata_password(store, serialized_metadata, serialized_metadata_length, &position);
 
-		if(password == NULL)
+		if(password == NULL) {
+			store_destroy(store);
+			for(unsigned long j = 0; j < it; j++)
+				password_destroy(passwords[j]);
+			free(passwords);
 			return NULL;
+		}
 
 		passwords[it] = password;
 
-		if(bytepos+password->encrypted_byte_length > serialized_password_sequence_length)
+		if(bytepos+password->encrypted_byte_length > serialized_password_sequence_length) {
+			store_destroy(store);
+			for(unsigned long j = 0; j < it; j++)
+				password_destroy(passwords[j]);
+			free(passwords);
+			free(password);
 			return NULL;
+		}
 
 		char* encrypted_password = malloc(sizeof(char)*password->encrypted_byte_length);
 		memcpy(encrypted_password, serialized_password_sequence+bytepos, password->encrypted_byte_length);
@@ -541,6 +642,7 @@ char* password_read_plain(Password* password) {
 		plain_password[it] = password->format[symbol % modulo];
 	}
 
+	free(plain_password_bytes);
 	return plain_password;
 }
 
@@ -561,22 +663,21 @@ bool passsword_write(Store* store, Password* password, unsigned char* plain_pass
 	return true;
 }
 
-bool store_copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
+int store_copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
+	if(store->shuffled_key != NULL || store->shuffle_key != NULL || store->shuffle_key_format != NULL)
+		return STORE_KEY_EXISTS_NOT_REPLACING;
+
 	if(store->key_verifiable) {
 		//char* key = unshuffle(shuffled_key, shuffle_key, shuffle_key_format);
 
 		// TODO KEY VERIFICATION
 	}
-	
-	char* new_shuffled_key = strcpymalloc(shuffled_key);
-	char* new_shuffle_key = strcpymalloc(shuffle_key);
-	char* new_shuffle_key_format = strcpymalloc(shuffle_key_format);
 
-	store->shuffled_key = new_shuffled_key;
-	store->shuffle_key = new_shuffle_key;
-	store->shuffle_key_format = new_shuffle_key_format;
+	store->shuffled_key = strcpymalloc(shuffled_key);
+	store->shuffle_key = strcpymalloc(shuffle_key);
+	store->shuffle_key_format = strcpymalloc(shuffle_key_format);
 
-	return true;
+	return STORE_KEY_OK;
 }
 
 void store_remove_key_and_dispose(Store* store) {

@@ -35,6 +35,10 @@ Store* store_construct();
 
 Password* password_construct();
 
+void store_destroy(Store* store);
+
+void password_destroy(Password* password);
+
 bool store_append_password(Store* store, Password* password, char* identifier);
 
 Password* store_remove_password(Store* store, unsigned long password_index);
@@ -69,7 +73,11 @@ char* password_read_plain(Password* password);
 
 bool passsword_write(Store* store, Password* password, unsigned char* plain_password_bytes, unsigned short byte_length, char* format, unsigned short length);
 
-bool store_copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format);
+#define STORE_KEY_OK 0
+#define STORE_KEY_VERIFICATION_FAILED 1
+#define STORE_KEY_EXISTS_NOT_REPLACING -1
+
+int store_copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format);
 
 void store_remove_key_and_dispose(Store* store);
 
