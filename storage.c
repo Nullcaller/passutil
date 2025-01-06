@@ -9,6 +9,79 @@
 #include "util.h"
 #include "shuffler.h"
 
+/*** PASSWORD-RELATED FUNCTIONS ***/
+
+Password* password_construct() {
+	Password* new_password = malloc(sizeof(Password));
+	new_password->store = NULL;
+	new_password->identifier = NULL;
+	new_password->length = 0;
+	new_password->byte_length = 0;
+	new_password->encrypted_byte_length = 0;
+	new_password->format = NULL;
+	new_password->encrypted_password = NULL;
+	return new_password;
+}
+
+void password_destroy(Password* password) {
+	free(password->identifier);
+	free(password->format);
+	free(password->encrypted_password);
+	free(password);
+}
+
+unsigned char* password_read_bytes(Password* password, unsigned int* byte_length) {
+	unsigned char* plain_password_bytes = decrypt(password->store->algorithm, password->encrypted_password, password->byte_length, password->store->shuffled_key, password->store->shuffle_key, password->store->shuffle_key_format);
+	*byte_length = password->byte_length;
+	return plain_password_bytes;
+}
+
+char* password_read_plain(Password* password) {
+	char* plain_password = malloc(sizeof(char)*(password->length+1));
+	plain_password[password->length] = '\0';
+
+	unsigned int byte_length;
+	unsigned char* plain_password_bytes = password_read_bytes(password, &byte_length);
+
+	unsigned int modulo = strlen(password->format);
+	unsigned long long symbol;
+	size_t symbol_length, one_byte_length;
+	symbol_length = sizeof(symbol);
+	one_byte_length = sizeof(char);
+	unsigned int jmax = symbol_length/one_byte_length;
+
+	for(unsigned int it = 0; it < password->length; it++) {
+		symbol = 0;
+		for(unsigned int j = 0; j < jmax; j++) {
+			symbol += plain_password_bytes[it*jmax+j];
+			symbol <<= (one_byte_length*8);
+		}
+		plain_password[it] = password->format[symbol % modulo];
+	}
+
+	free(plain_password_bytes);
+	return plain_password;
+}
+
+bool passsword_write(Store* store, Password* password, unsigned char* plain_password_bytes, unsigned short byte_length, char* format, unsigned short length) {
+	if(password->encrypted_password != NULL) 
+		return false;
+
+	password->format = strcpymalloc(format);
+	password->length = length;
+	password->byte_length = byte_length;
+
+	unsigned int encrypted_byte_length;
+	unsigned char* encrypted_password_bytes = encrypt(&encrypted_byte_length, store->algorithm, plain_password_bytes, byte_length, store->shuffled_key, store->shuffle_key, store->shuffle_key_format);
+
+	password->encrypted_byte_length = encrypted_byte_length;
+	password->encrypted_password = encrypted_password_bytes;
+
+	return true;
+}
+
+/*** STORE-RELATED FUNCTIONS ***/
+
 Store* store_construct() {
 	Store* new_store = malloc(sizeof(Store));
 	new_store->algorithm = NULL;
@@ -25,18 +98,6 @@ Store* store_construct() {
 	return new_store;
 }
 
-Password* password_construct() {
-	Password* new_password = malloc(sizeof(Password));
-	new_password->store = NULL;
-	new_password->identifier = NULL;
-	new_password->length = 0;
-	new_password->byte_length = 0;
-	new_password->encrypted_byte_length = 0;
-	new_password->format = NULL;
-	new_password->encrypted_password = NULL;
-	return new_password;
-}
-
 void store_destroy(Store* store) {
 	free(store->algorithm);
 	free(store->shuffled_key);
@@ -46,13 +107,6 @@ void store_destroy(Store* store) {
 	free(store->key_verification_salt);
 	free(store->key_verification_text);
 	free(store);
-}
-
-void password_destroy(Password* password) {
-	free(password->identifier);
-	free(password->format);
-	free(password->encrypted_password);
-	free(password);
 }
 
 bool store_append_password(Store* store, Password* password, char* identifier) {
@@ -611,56 +665,6 @@ Password* store_find_password(Store* store, char* identifier) {
 		if(strcmp(identifier, store->passwords[it]->identifier) == 0)
 			return store->passwords[it];
 	return NULL;
-}
-
-unsigned char* password_read_bytes(Password* password, unsigned int* byte_length) {
-	unsigned char* plain_password_bytes = decrypt(password->store->algorithm, password->encrypted_password, password->byte_length, password->store->shuffled_key, password->store->shuffle_key, password->store->shuffle_key_format);
-	*byte_length = password->byte_length;
-	return plain_password_bytes;
-}
-
-char* password_read_plain(Password* password) {
-	char* plain_password = malloc(sizeof(char)*(password->length+1));
-	plain_password[password->length] = '\0';
-
-	unsigned int byte_length;
-	unsigned char* plain_password_bytes = password_read_bytes(password, &byte_length);
-
-	unsigned int modulo = strlen(password->format);
-	unsigned long long symbol;
-	size_t symbol_length, one_byte_length;
-	symbol_length = sizeof(symbol);
-	one_byte_length = sizeof(char);
-	unsigned int jmax = symbol_length/one_byte_length;
-
-	for(unsigned int it = 0; it < password->length; it++) {
-		symbol = 0;
-		for(unsigned int j = 0; j < jmax; j++) {
-			symbol += plain_password_bytes[it*jmax+j];
-			symbol <<= (one_byte_length*8);
-		}
-		plain_password[it] = password->format[symbol % modulo];
-	}
-
-	free(plain_password_bytes);
-	return plain_password;
-}
-
-bool passsword_write(Store* store, Password* password, unsigned char* plain_password_bytes, unsigned short byte_length, char* format, unsigned short length) {
-	if(password->encrypted_password != NULL) 
-		return false;
-
-	password->format = strcpymalloc(format);
-	password->length = length;
-	password->byte_length = byte_length;
-
-	unsigned int encrypted_byte_length;
-	unsigned char* encrypted_password_bytes = encrypt(&encrypted_byte_length, store->algorithm, plain_password_bytes, byte_length, store->shuffled_key, store->shuffle_key, store->shuffle_key_format);
-
-	password->encrypted_byte_length = encrypted_byte_length;
-	password->encrypted_password = encrypted_password_bytes;
-
-	return true;
 }
 
 int store_copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {

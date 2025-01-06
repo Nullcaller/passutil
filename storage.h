@@ -3,9 +3,35 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+/* TYPE DECLARATIONS */
+
 typedef struct store Store;
 
 typedef struct password Password;
+
+/*** PASSWORD-RELATED FUNCTIONS ***/
+
+struct password {
+	Store* store;
+	char* identifier;
+	unsigned short length;
+	unsigned short byte_length;
+	unsigned short encrypted_byte_length;
+	char* format;
+	char* encrypted_password;
+};
+
+Password* password_construct();
+
+void password_destroy(Password* password);
+
+unsigned char* password_read_bytes(Password* password, unsigned int* byte_length);
+
+char* password_read_plain(Password* password);
+
+bool passsword_write(Store* store, Password* password, unsigned char* plain_password_bytes, unsigned short byte_length, char* format, unsigned short length);
+
+/*** STORE-RELATED FUNCTIONS ***/
 
 struct store {
 	char* algorithm;
@@ -21,23 +47,9 @@ struct store {
 	Password** passwords;
 };
 
-struct password {
-	Store* store;
-	char* identifier;
-	unsigned short length;
-	unsigned short byte_length;
-	unsigned short encrypted_byte_length;
-	char* format;
-	char* encrypted_password;
-};
-
 Store* store_construct();
 
-Password* password_construct();
-
 void store_destroy(Store* store);
-
-void password_destroy(Password* password);
 
 bool store_append_password(Store* store, Password* password, char* identifier);
 
@@ -66,12 +78,6 @@ bool store_save(Store* store, FILE* metadata_file, FILE* master_file);
 bool store_load(FILE* metadata_file, FILE* master_file, Store** store);
 
 Password* store_find_password(Store* store, char* identifier);
-
-unsigned char* password_read_bytes(Password* password, unsigned int* byte_length);
-
-char* password_read_plain(Password* password);
-
-bool passsword_write(Store* store, Password* password, unsigned char* plain_password_bytes, unsigned short byte_length, char* format, unsigned short length);
 
 #define STORE_KEY_OK 0
 #define STORE_KEY_VERIFICATION_FAILED 1
