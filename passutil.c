@@ -21,6 +21,8 @@
 #include "generation.c"
 #include "storage.c"
 #include "memorizer.c"
+#include "facilities.c"
+#include "pseudoshell.c"
 
 int main(int argc, char* argv[]) {
 	/* OPTION PARSING */
@@ -88,7 +90,7 @@ int main(int argc, char* argv[]) {
 	char* plain_password_1 = password_read_plain(password);
 	printf("%s\n", plain_password_1);
 
-	/*unsigned int sm_length;
+	unsigned int sm_length;
 	char* metadata = store_serialize_metadata(store, &sm_length);
 	printf("%d:\n%s\n", sm_length, metadata);
 
@@ -106,23 +108,42 @@ int main(int argc, char* argv[]) {
 
 	printf("\n");
 
-	FILE* metadata_file = fopen("test.psmdf", "w+");
-	FILE* master_file = fopen("test.psmf", "w+");
+	loaded_store = store;
+	FACILITIES_SET_STORE_LOADED(true);
 
-	store_save(store, metadata_file, master_file);
+	int save_debug;
+	if((save_debug = facility_save_as("test")) != FACILITIES_OK) {
+		printf("WTF SAVE: %d\n", save_debug);
+		return -1;
+	}
 
-	fflush(metadata_file);
-	fflush(master_file);
+	//FILE* metadata_file = fopen("test.psmdf", "w+");
+	//FILE* master_file = fopen("test.psmf", "w+");
 
-	fclose(metadata_file);
-	fclose(master_file);
+	//store_save(store, metadata_file, master_file);
 
-	metadata_file = fopen("test.psmdf", "r");
-	master_file = fopen("test.psmf", "r");
+	//fflush(metadata_file);
+	//fflush(master_file);
 
-	Store* store_new;
-	store_load(metadata_file, master_file, &store_new);
+	//fclose(metadata_file);
+	//fclose(master_file);
 
+	//metadata_file = fopen("test.psmdf", "r");
+	//master_file = fopen("test.psmf", "r");
+
+	//Store* store_new;
+	//store_load(metadata_file, master_file, &store_new);
+
+	loaded_store = NULL;
+	FACILITIES_SET_STORE_LOADED(false);
+
+	int load_debug;
+	if((load_debug = facility_load("test")) != FACILITIES_OK) {
+		printf("WTF LAOD: %d\n", load_debug);
+		return 1;
+	}
+
+	Store* store_new = loaded_store;
 	Password* password_new = store_find_password(store_new, "Some Service");
 
 	store_new->shuffle_key_format = FORMAT_AZaz09;
@@ -142,7 +163,7 @@ int main(int argc, char* argv[]) {
 		printf("%02X\t", pseq[it]);
 		if(it % 10 == 9)
 			printf("\n");
-	}*/
+	}
 
 	char* shuffle_key_format__ = FORMAT_AZaz09_symb_sp;
 	char* shuffle_key__;
