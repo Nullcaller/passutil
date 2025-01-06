@@ -252,7 +252,6 @@ bool store_parse_field_forced_len(unsigned char* string, unsigned int max_length
 			_field_value = strappendcharrealloc(_field_value, &allocated_field_length, &current_field_length, piece_length, *(strp+posadd+posbuf));
 			posbuf++;
 		}
-		_field_value = strappendcharrealloc(_field_value, &allocated_field_length, &current_field_length, piece_length, '\0');
 		_field_value = strtrimrealloc(_field_value, &allocated_field_length);
 		posadd += posbuf;
 	} else if(forced_field_length == 0) {
