@@ -8,6 +8,11 @@
 #define STORAGE_EXTENSION_METADATA ".psmdf"
 #define STORAGE_EXTENSION_MASTER ".psmf"
 
+static unsigned short storage_supported_algorithm_count = 1;
+static char* storage_supported_algorithms[] = {
+	"AES256"
+};
+
 /* TYPE DECLARATIONS */
 
 typedef struct store Store;
