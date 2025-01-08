@@ -94,7 +94,7 @@ Store* store_construct() {
 	new_store->key_verification_salt = NULL;
 	new_store->key_verification_text = NULL;
 	new_store->password_count = 0;
-	new_store->passwords = 0;
+	new_store->passwords = NULL;
 	return new_store;
 }
 
