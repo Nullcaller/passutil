@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdbool.h>
+#include<string.h>
 
 #include "pseudoshell.h"
 
@@ -27,26 +28,40 @@ int _getstr(char** str, unsigned int piece_length) {
 	return str_length+1;
 }
 
-int _present_yesno_prompt(char* prompt) {
-	printf(prompt);
-	printf(" (Y/n) ");
-
+int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid) {
 	char* str;
+	int res = -2;
 
-	if(_getstr(&str, PSEUDOSHELL_BUFFER_SIZE) <= 0)
-		return -1;
-		
-	if(str[0] == 'Y' || str[0] == 'y')
-		return 1;
-	else if(str[0] == 'N' || str[0] == 'n')
-		return 0;
-	else
-		return -2;
+	while(res < 0) {
+		printf(prompt);
+		printf(" (");
+
+		unsigned int options_length = strlen(options_LOWERCASE);
+		for(unsigned int it = 0; it < options_length; it++) {
+			if(it == 0)
+				printf("%c", options_LOWERCASE[it] + 'A'-'a');
+			else
+				printf("%c", options_LOWERCASE[it]);
+			if(it+1 != options_length)
+				printf("/");
+		}
+
+		printf(") ");
+
+		if(_getstr(&str, PSEUDOSHELL_BUFFER_SIZE) <= 0)
+			return -1;
+			
+		for(unsigned int it = 0; it < options_length; it++)
+			if((options_LOWERCASE[it] == str[0]) || (str[0] == (options_LOWERCASE[it]-('a'-'A')) && (str[0] >= 'A' && str[0] <= 'Z')))
+				res = it;
+
+		if(!repeat_until_valid)
+			break;
+	}
+	
+	return res;
 }
 
-bool present_yesno_prompt(char* prompt) {
-	int result = -1;
-	while(result < 0)
-		result = _present_yesno_prompt(prompt);
-	return result;
+bool present_yesno_prompt(char* prompt, bool repeat_until_valid) {
+	return present_prompt(prompt, "yn", repeat_until_valid);
 }

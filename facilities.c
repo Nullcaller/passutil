@@ -82,7 +82,7 @@ int facility_save_as(char* path) {
 
 	if((loaded_store_path == NULL || !(strcmp(path, loaded_store_path) == 0)) && (access(path_metadata_file, F_OK) == 0 || access(path_master_file, F_OK) == 0)) {
 		if(interactive) {
-			if(!present_yesno_prompt("Files already exist. Overwrite?")) {
+			if(!present_yesno_prompt("Files already exist. Overwrite?", true)) {
 				free(path_metadata_file);
 				free(path_master_file);
 				return FACILITIES_SAVE_OVERWRITE_DENIED;
