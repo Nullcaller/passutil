@@ -3,8 +3,8 @@
 
 /*** CURRENT APPLICATION STATE DESCRIPTION ***/
 
-static Store* loaded_store;
-static char* loaded_store_path;
+static Store* loaded_store = NULL;
+static char* loaded_store_path = NULL;
 
 // State variable
 static unsigned long facilities_state = 0;
