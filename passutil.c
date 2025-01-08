@@ -30,17 +30,18 @@ int main(int argc, char* argv[]) {
 	int option, option_index;
 
 	static struct option long_options[] = {
-    	{ "debug",			no_argument,	&debug,			true },
-		{ "interactive",	no_argument,	&interactive,	true },
-		{ "quiet",			no_argument,	&quiet,			true },
-		{ "yes",			no_argument,	&yes,			true },
+    	{ "debug",			no_argument,	&debug,			true	},
+		{ "interactive",	no_argument,	&interactive,	true	},
+		{ "quiet",			no_argument,	&quiet,			true	},
+		{ "yes",			no_argument,	&yes,			true	},
+		{ "no",				no_argument,	&yes,			false	},
     	{ 0, 0, 0, 0 }
     };
 
 	while(true) {
 		option_index = 0;
 
-		option = getopt_long(argc, argv, "diqy", long_options, &option_index);
+		option = getopt_long(argc, argv, "diqyn", long_options, &option_index);
 
 		if(debug && option != 0 && option != -1)
 			printf("Parsing option: %c (%d)\n", option, option);
@@ -68,6 +69,9 @@ int main(int argc, char* argv[]) {
 				break;
 			case 'y':
 				yes = true;
+				break;
+			case 'n':
+				yes = false;
 				break;
 			case '?':
 				if(debug)
