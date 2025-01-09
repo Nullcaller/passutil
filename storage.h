@@ -5,6 +5,8 @@
 
 /* CONSTANTS */
 
+#define STORAGE_PIECE_LENGTH 4096
+
 #define STORAGE_EXTENSION_METADATA ".psmdf"
 #define STORAGE_EXTENSION_MASTER ".psmf"
 
@@ -87,7 +89,7 @@ bool store_save(Store* store, FILE* metadata_file, FILE* master_file);
 
 bool store_load(FILE* metadata_file, FILE* master_file, Store** store);
 
-Password* store_find_password(Store* store, char* identifier);
+unsigned long store_find_passwords(Store* store, char* identifier, unsigned long** ids);
 
 #define STORE_KEY_OK 0
 #define STORE_KEY_VERIFICATION_FAILED 1

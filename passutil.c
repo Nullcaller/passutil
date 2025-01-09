@@ -104,7 +104,8 @@ int main(int argc, char* argv[]) {
 	facility_to("10");
 	facility_generate("Some_Service");
 	facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION);
-	Password* password = store_find_password(loaded_store, "Some_Service");
+	
+	Password* password = loaded_store->passwords[0];
 	char* plain_password_1 = password_read_plain(password);
 	printf("%s\n", plain_password_1);
 
@@ -158,7 +159,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	Store* store_new = loaded_store;
-	Password* password_new = store_find_password(store_new, "Some_Service");
+	Password* password_new = loaded_store->passwords[0];
 
 	//store_new->shuffle_key_format = FORMAT_AZaz09;
 	//generate_shuffle_key(&store_new->shuffle_key, store_new->shuffle_key_format);

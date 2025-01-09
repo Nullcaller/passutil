@@ -659,11 +659,29 @@ bool store_load(FILE* metadata_file, FILE* master_file, Store** store) {
 	return true;
 }
 
-Password* store_find_password(Store* store, char* identifier) {
+unsigned long store_find_passwords(Store* store, char* identifier, unsigned long** ids) {
+	unsigned long piece_length = STORAGE_PIECE_LENGTH;
+
+	unsigned long count = 0;
+	unsigned long* _ids = malloc(sizeof(unsigned long)*piece_length);
+	unsigned long allocated_length = piece_length;
+
 	for(unsigned long it = 0; it < store->password_count; it++)
-		if(strcmp(identifier, store->passwords[it]->identifier) == 0)
-			return store->passwords[it];
-	return NULL;
+		if(strcmp(identifier, store->passwords[it]->identifier) == 0) {
+			if(count+1 > allocated_length) {
+				allocated_length = ((count+1)/piece_length+1)*piece_length;
+				_ids = realloc(_ids, sizeof(unsigned long)*allocated_length);
+			}
+			_ids[count] = it;
+			count++;
+		}
+
+	if(count == 0) {
+		free(_ids);
+		*ids = NULL;
+	} else
+		*ids = _ids;
+	return count;
 }
 
 int store_copy_and_insert_key(Store* store, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
