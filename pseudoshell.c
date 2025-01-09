@@ -9,7 +9,6 @@
 
 int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
 	struct termios old, new;
-	int nread;
 
 	fputs(prompt, stdout);
 
@@ -20,14 +19,35 @@ int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
 	if(tcsetattr(fileno(stdin), TCSAFLUSH, &new) != 0)
     	return -1;
 
-	nread = getstr(pass, piece_length);
+	char* _str = NULL;
+	unsigned int str_allocated_length = 0;
+	unsigned int str_length = 0;
+
+	char character;
+	while((character = getchar()) != '\n' && character != '\r' && character != EOF) {
+		if(character == 127 || character == 8) {
+			if(str_length != 0) {
+				str_length--;
+				_str[str_length] = '\0';
+			}
+		} else
+			_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
+	}
+
+	if(_str != NULL)
+		_str = strtrimrealloc(_str, &str_allocated_length);
+	else {
+		_str = malloc(sizeof(char));
+		_str[0] = '\0';
+	}
 
 	tcsetattr(fileno(stdin), TCSAFLUSH, &old);
 
-	return nread;
+	*pass = _str;
+	return str_length;
 }
 
-int pseudoshell_getpasschar(char* passchar, char* prompt) {
+int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid) {
 	struct termios old, new;
 	char c;
 
@@ -40,7 +60,17 @@ int pseudoshell_getpasschar(char* passchar, char* prompt) {
 	if(tcsetattr(fileno(stdin), TCSAFLUSH, &new) != 0)
     	return -1;
 
-	c = getchar();
+	unsigned int valid_char_count = strlen(valid_chars);
+	bool valid_char = false;
+	while((c = getchar()) != EOF) {
+		for(unsigned int it = 0; it < valid_char_count; it++)
+			if(c == valid_chars[it]) {
+				valid_char = true;
+				break;
+			}
+		if(valid_char || !repeat_until_valid)
+			break;
+	}
 
 	tcsetattr(fileno(stdin), TCSAFLUSH, &old);
 
