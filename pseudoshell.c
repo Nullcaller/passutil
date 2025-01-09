@@ -1,12 +1,58 @@
 #include<stdio.h>
 #include<stdbool.h>
 #include<string.h>
+#include<termios.h>
 
 #include "pseudoshell.h"
 
 #include "util.h"
 
-int _getstr(char** str, unsigned int piece_length) {
+int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
+	struct termios old, new;
+	int nread;
+
+	fputs(prompt, stdout);
+
+	if(tcgetattr(fileno(stdin), &old) != 0)
+		return -1;
+	new = old;
+	new.c_lflag &= ~(ICANON | ECHO);
+	if(tcsetattr(fileno(stdin), TCSAFLUSH, &new) != 0)
+    	return -1;
+
+	nread = getstr(pass, piece_length);
+
+	tcsetattr(fileno(stdin), TCSAFLUSH, &old);
+
+	return nread;
+}
+
+int pseudoshell_getpasschar(char* passchar, char* prompt) {
+	struct termios old, new;
+	char c;
+
+	fputs(prompt, stdout);
+
+	if(tcgetattr(fileno(stdin), &old) != 0)
+		return -1;
+	new = old;
+	new.c_lflag &= ~(ICANON | ECHO);
+	if(tcsetattr(fileno(stdin), TCSAFLUSH, &new) != 0)
+    	return -1;
+
+	c = getchar();
+
+	tcsetattr(fileno(stdin), TCSAFLUSH, &old);
+
+	if(c == '\n' || c == EOF || c == '\r')
+		return 0;
+	else {
+		*passchar = c;
+		return 1;
+	}
+}
+
+int getstr(char** str, unsigned int piece_length) {
 	char* _str = NULL;
 	unsigned int str_allocated_length = 0;
 	unsigned int str_length = 0;
@@ -48,7 +94,7 @@ int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_vali
 
 		printf(") ");
 
-		if(_getstr(&str, PSEUDOSHELL_BUFFER_SIZE) <= 0)
+		if(getstr(&str, PSEUDOSHELL_BUFFER_SIZE) <= 0)
 			return -1;
 			
 		for(unsigned int it = 0; it < options_length; it++)
