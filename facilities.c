@@ -249,6 +249,8 @@ int facility_save_as(char* path) {
 	fclose(metadata_file);
 	fclose(master_file);
 
+	FACILITIES_SET_STORE_DIRTY(false);
+
 	return FACILITIES_OK;
 }
 
