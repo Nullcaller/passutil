@@ -182,6 +182,78 @@ int facility_load(char* path) {
 	loaded_store_path = strcpymalloc(path);
 	FACILITIES_SET_STORE_LOADED(true);
 	FACILITIES_SET_STORE_INIT_COMPLETE(true);
+	FACILITIES_SET_STORE_UNLOCKED(false);
+
+	return FACILITIES_OK;
+}
+
+int facility_unlock() {
+	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
+	if(!FACILITIES_STORE_LOADED)
+		return FACILITIES_UNLOCK_STORE_NOT_LOADED;
+
+	if(!FACILITIES_STORE_INIT_COMPLETE)
+		return FACILITIES_UNLOCK_STORE_INIT_NOT_COMPLETE;
+
+	if(FACILITIES_STORE_UNLOCKED)
+		return FACILITIES_UNLOCK_STORE_ALREADY_UNLOCKED;
+
+	char* key = NULL;
+	int length = 0;
+
+	if(interactive)
+		length = pseudoshell_getpass(&key, "Enter key: ", PSEUDOSHELL_BUFFER_SIZE);
+	else
+		length = getstr(&key, PSEUDOSHELL_BUFFER_SIZE);
+
+	if(length <= 0) {
+		free(key);
+		return FACILITIES_UNLOCK_NO_KEY_PROVIDED;
+	}
+
+	char* shuffle_key_format = FORMAT_AZaz09_symb_sp;
+	for(unsigned short it = 0; it < strlen(key); it++)
+		if(strchr(shuffle_key_format, key[it]) == NULL)
+			return FACILITIES_UNLOCK_UNABLE_TO_GENERATE_SHUFFLE_KEY;
+	
+	char* shuffle_key;
+	generate_shuffle_key(&shuffle_key, shuffle_key_format);
+	char* shuffled_key = shuffle(key, shuffle_key, shuffle_key_format);
+
+	int insert_result = store_copy_and_insert_key(loaded_store, shuffled_key, shuffle_key, shuffle_key_format);
+
+	free(shuffle_key);
+	free(shuffled_key);
+
+	switch(insert_result) {
+		default:
+			return FACILITIES_UNLOCK_UNKNOWN_ERROR;
+		case STORE_KEY_OK:
+			FACILITIES_SET_STORE_UNLOCKED(true);
+			return FACILITIES_OK;
+		case STORE_KEY_EXISTS_NOT_REPLACING:
+			return FACILITIES_UNLOCK_KEY_EXISTS_NOT_REPLACING;
+		case STORE_KEY_VERIFICATION_FAILED:
+			return FACILITIES_UNLOCK_VERIFICATION_FAILED;
+	}
+}
+
+int facility_lock() {
+	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
+	if(!FACILITIES_STORE_LOADED)
+		return FACILITIES_LOCK_STORE_NOT_LOADED;
+
+	if(!FACILITIES_STORE_INIT_COMPLETE)
+		return FACILITIES_LOCK_STORE_INIT_NOT_COMPLETE;
+
+	if(!FACILITIES_STORE_UNLOCKED)
+		return FACILITIES_LOCK_STORE_ALREADY_LOCKED;
+
+	store_remove_key_and_dispose(loaded_store);
 
 	return FACILITIES_OK;
 }
@@ -287,6 +359,7 @@ int facility_close() {
 	FACILITIES_SET_STORE_DIRTY(false);
 	FACILITIES_SET_STORE_LOADED(false);
 	FACILITIES_SET_STORE_INIT_COMPLETE(false);
+	FACILITIES_SET_STORE_UNLOCKED(false);
 
 	return FACILITIES_OK;
 }
