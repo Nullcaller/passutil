@@ -273,6 +273,7 @@ int facility_close() {
 		}
 	}
 
+	store_destroy(loaded_store);
 	loaded_store = NULL;
 	free(loaded_store_path);
 	loaded_store_path = NULL;
