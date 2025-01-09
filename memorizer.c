@@ -68,8 +68,10 @@ int memorize_nth_symbol(char* shuffled_password, char* shuffle_key, char* shuffl
 	char* read_str;
 	unsigned short selection = strtoul(selection_string, &read_str, 10);
 	if(selection == 0 && strlen(selection_string) != (read_str-selection_string)) {
+		free(selection_string);
 		return MEMORIZER_ERROR;
 	}
+	free(selection_string);
 
 	//printf("SELECTION: %hd\n", selection);
 
