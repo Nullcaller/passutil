@@ -87,15 +87,20 @@ int main(int argc, char* argv[]) {
 	facility_init();
 	facility_set("algorithm");
 	facility_to("AES256");
-	char* shuffle_key;
-	char* shuffle_key_format = FORMAT_AZaz09;
-	generate_shuffle_key(&shuffle_key, shuffle_key_format);
-	char* shuffled_key = shuffle("HelloWorld", shuffle_key, shuffle_key_format);
-	store_copy_and_insert_key(loaded_store, shuffled_key, shuffle_key, shuffle_key_format);
-	free(shuffle_key);
-	free(shuffled_key);
+	//char* shuffle_key;
+	//char* shuffle_key_format = FORMAT_AZaz09;
+	//generate_shuffle_key(&shuffle_key, shuffle_key_format);
+	//char* shuffled_key = shuffle("HelloWorld", shuffle_key, shuffle_key_format);
+	//store_copy_and_insert_key(loaded_store, shuffled_key, shuffle_key, shuffle_key_format);
+	//free(shuffle_key);
+	//free(shuffled_key);
 
-	Password* password = generate_password_and_append(loaded_store, "Some_Service", FORMAT_AZaz09, 10);
+	//Password* password = generate_password_and_append(loaded_store, "Some_Service", FORMAT_AZaz09, 10);
+	facility_unlock();
+	facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION);
+	facility_generate("Some_Service", FORMAT_AZaz09, 10);
+	facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION);
+	Password* password = store_find_password(loaded_store, "Some_Service");
 	char* plain_password_1 = password_read_plain(password);
 	printf("%s\n", plain_password_1);
 
@@ -151,9 +156,11 @@ int main(int argc, char* argv[]) {
 	Store* store_new = loaded_store;
 	Password* password_new = store_find_password(store_new, "Some_Service");
 
-	store_new->shuffle_key_format = FORMAT_AZaz09;
-	generate_shuffle_key(&store_new->shuffle_key, store_new->shuffle_key_format);
-	store_new->shuffled_key = shuffle("HelloWorld", store_new->shuffle_key, store_new->shuffle_key_format);
+	//store_new->shuffle_key_format = FORMAT_AZaz09;
+	//generate_shuffle_key(&store_new->shuffle_key, store_new->shuffle_key_format);
+	//store_new->shuffled_key = shuffle("HelloWorld", store_new->shuffle_key, store_new->shuffle_key_format);
+
+	facility_unlock();
 
 	char* plain_password_2 = password_read_plain(password_new);
 	printf("%s\n", plain_password_2);
