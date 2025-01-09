@@ -62,7 +62,7 @@ int facility_set(char* new_field_name) {
 
 	bool field_name_allowed = false;
 	for(unsigned short it = 0; it < allowed_field_name_counts[mode]; it++)
-		if(strcmp(allowed_field_names[it], new_field_name) == 0) {
+		if(strcmp(allowed_field_names[mode][it], new_field_name) == 0) {
 			field_name_allowed = true;
 			break;
 		}
