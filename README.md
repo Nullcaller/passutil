@@ -1,6 +1,6 @@
 # passutil (WIP)
 
-A simple **WORK IN-PROGRESS** command-line utility to store and memorize passwords using libsodium and OpenSSL. Stores passwords in an AES256-encrypted form in a single blob. Metadata is stored separately in an encrypted form.
+A simple **WORK IN-PROGRESS** command-line utility to store and memorize passwords using libsodium and OpenSSL. Stores passwords in an AES256-encrypted form in a single blob. Metadata is stored separately in an unencrypted form.
 
 By default, no AES256 encryption key validation methods are avilable. `passutil` relies on the user to recognize whether the presented passwords are correct. This way, if the passwords are generated with `passutil`, a potential attacker with access to the password store will pretty much be unable to formulate a hypothesis when attempting to decrypt the passwords. At least, that's the hope.
 
