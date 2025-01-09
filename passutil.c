@@ -161,6 +161,10 @@ int main(int argc, char* argv[]) {
 	Store* store_new = loaded_store;
 	Password* password_new = loaded_store->passwords[0];
 
+	facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION);
+	facility_find("Some_Service");
+	facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION);
+
 	//store_new->shuffle_key_format = FORMAT_AZaz09;
 	//generate_shuffle_key(&store_new->shuffle_key, store_new->shuffle_key_format);
 	//store_new->shuffled_key = shuffle("HelloWorld", store_new->shuffle_key, store_new->shuffle_key_format);

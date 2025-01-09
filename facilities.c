@@ -413,6 +413,37 @@ int facility_close() {
 
 int facility_fetch(unsigned long id);
 
+int facility_find(char* identifier) {
+	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
+	if(!FACILITIES_STORE_LOADED)
+		return FACILITIES_FIND_STORE_NOT_LOADED;
+
+	if(!FACILITIES_STORE_INIT_COMPLETE)
+		return FACILITIES_FIND_STORE_INIT_NOT_COMPLETE;
+
+	unsigned long count;
+	unsigned long* ids;
+	count = store_find_passwords(loaded_store, identifier, &ids);
+
+	if(!quiet) {
+		if(count == 0) {
+			printf("No matching passwords found.\n");
+			free(ids);
+			return FACILITIES_FIND_NO_PASSWORDS_FOUND;
+		} else
+			printf("IDs of matching passwords:\n");
+	}
+
+	for(unsigned long it = 0; it < count; it++)
+		printf("%ld\n", ids[it]);
+
+	free(ids);
+
+	return FACILITIES_OK;
+}
+
 int facility_generate(char* identifier) {
 	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
 		return FACILITIES_WRONG_MODE;

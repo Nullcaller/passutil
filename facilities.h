@@ -109,6 +109,12 @@ int facility_close();
 
 int facility_fetch(unsigned long id);
 
+#define FACILITIES_FIND_STORE_NOT_LOADED			1
+#define FACILITIES_FIND_STORE_INIT_NOT_COMPLETE		2
+#define FACILITIES_FIND_NO_PASSWORDS_FOUND			3
+
+int facility_find(char* identifier);
+
 #define FACILITIES_GENERATE_STORE_NOT_LOADED			1
 #define FACILITIES_GENERATE_STORE_INIT_NOT_COMPLETE		2
 #define FACILITIES_GENERATE_STORE_LOCKED				3
