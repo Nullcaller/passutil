@@ -77,6 +77,9 @@ int facility_save();
 
 int facility_save_as(char* path);
 
+#define FACILITIES_CLOSE_STORE_NOT_LOADED		1
+#define FACILITIES_CLOSE_DIRTY_DISCARD_DENIED	2
+
 int facility_close();
 
 int facility_fetch(unsigned long id);

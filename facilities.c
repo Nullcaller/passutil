@@ -257,6 +257,41 @@ int facility_save_as(char* path) {
 	return FACILITIES_OK;
 }
 
+int facility_close()
+{
+	if (mode != FACILITIES_MODE_STORE_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
+	if (!FACILITIES_STORE_LOADED)
+		return FACILITIES_CLOSE_STORE_NOT_LOADED;
+
+	if (FACILITIES_STORE_DIRTY)
+	{
+		if (interactive)
+		{
+			if (!present_yesno_prompt("There are unsaved changes to the store. If the store is closed, THEY WILL BE LOST. Close regardless?", true))
+				return FACILITIES_CLOSE_DIRTY_DISCARD_DENIED;
+		}
+		else
+		{
+			if (!yes)
+			{
+				printf("The store contains unsaved changes. Aborting store close.\n(Use -y option to override)");
+				return FACILITIES_CLOSE_DIRTY_DISCARD_DENIED;
+			}
+		}
+	}
+
+	loaded_store = NULL;
+	free(loaded_store_path);
+	loaded_store_path = NULL;
+	FACILITIES_SET_STORE_DIRTY(false);
+	FACILITIES_SET_STORE_LOADED(false);
+	FACILITIES_SET_STORE_INIT_COMPLETE(false);
+
+	return FACILITIES_OK;
+}
+
 int facility_fetch(unsigned long id);
 
 int facility_gen(char* identifier, unsigned short length);
