@@ -98,7 +98,11 @@ int main(int argc, char* argv[]) {
 	//Password* password = generate_password_and_append(loaded_store, "Some_Service", FORMAT_AZaz09, 10);
 	facility_unlock();
 	facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION);
-	facility_generate("Some_Service", FORMAT_AZaz09, 10);
+	facility_set("format");
+	facility_to("FORMAT_AZaz09_64");
+	facility_set("length");
+	facility_to("10");
+	facility_generate("Some_Service");
 	facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION);
 	Password* password = store_find_password(loaded_store, "Some_Service");
 	char* plain_password_1 = password_read_plain(password);
