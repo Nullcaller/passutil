@@ -47,8 +47,11 @@ int facility_set(char* new_field_name) {
 		"key_verification_algorithm",
 		"key_verification_algorithm_rounds"
 	};
-	unsigned short mode_password_manipulation_allowed_field_name_count = 0;
-	char* mode_password_manipulation_allowed_field_names[] = {};
+	unsigned short mode_password_manipulation_allowed_field_name_count = 2;
+	char* mode_password_manipulation_allowed_field_names[] = {
+		"format",
+		"length"
+	};
 	unsigned short mode_memorization_allowed_field_name_count = 0;
 	char* mode_memorization_allowed_field_names[] = {};
 	unsigned short mode_transfer_allowed_field_name_count = 0;
@@ -116,6 +119,49 @@ int facility_to(char* field_value) {
 					return FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE;
 
 				// TODO Change key verification algorithm rounds amount
+			}
+
+			break;
+		case FACILITIES_MODE_PASSWORD_MANIPULATION:
+			if(strcmp(field_name, "format") == 0) {
+				bool valid_format = false;
+				unsigned short valid_format_name_count = 5;
+				char* valid_format_names[] = {
+					"FORMAT_AZaz09",
+					"FORMAT_AZaz09_64",
+					"FORMAT_AZaz09_symb",
+					"FORMAT_AZaz09_sp",
+					"FORMAT_AZaz09_symb_sp"
+				};
+				char* valid_formats[] = {
+					FORMAT_AZaz09,
+					FORMAT_AZaz09_64,
+					FORMAT_AZaz09_symb,
+					FORMAT_AZaz09_sp,
+					FORMAT_AZaz09_symb_sp
+				};
+				unsigned short index;
+				for(unsigned short it = 0; it < valid_format_name_count; it++)
+					if(strcmp(field_value, valid_format_names[it]) == 0) {
+						valid_format = true;
+						index = it;
+						break;
+					}
+				if(!valid_format) {
+					if(!quiet) {
+						printf("Invalid format. Valid formats are:\n");
+						for(unsigned short it = 0; it < valid_format_name_count; it++)
+							printf("- `%s` (%s)\n", valid_format_names[it], valid_formats[it]);
+					}
+					return FACILITIES_TO_PASSWORD_MANIPULATION_INVALID_FORMAT;
+				}
+				password_format = valid_formats[index];
+			} else if(strcmp(field_name, "length") == 0) {
+				char* read_str;
+				unsigned int new_length = strtoul(field_value, &read_str, 10);
+				if(new_length == 0 && (read_str-field_value != strlen(field_value)))
+					return FACILITIES_TO_PASSWORD_MANIPULATION_INVALID_LENGTH;
+				password_length = new_length;
 			}
 
 			break;
@@ -367,7 +413,7 @@ int facility_close() {
 
 int facility_fetch(unsigned long id);
 
-int facility_generate(char* identifier, char* format, unsigned int length) {
+int facility_generate(char* identifier) {
 	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
 		return FACILITIES_WRONG_MODE;
 
@@ -380,7 +426,7 @@ int facility_generate(char* identifier, char* format, unsigned int length) {
 	if(!FACILITIES_STORE_UNLOCKED)
 		return FACILITIES_GENERATE_STORE_LOCKED;
 
-	generate_password_and_append(loaded_store, identifier, format, length);
+	generate_password_and_append(loaded_store, identifier, password_format, password_length);
 
 	return FACILITIES_OK;
 }

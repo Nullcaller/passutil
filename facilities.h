@@ -15,6 +15,9 @@ static char *field_name = NULL;
 static Store* loaded_store = NULL;
 static char* loaded_store_path = NULL;
 
+static char* password_format = FORMAT_AZaz09;
+static unsigned int password_length = 20;
+
 // State variable
 static unsigned long facilities_state = 0;
 
@@ -55,6 +58,8 @@ int facility_set(char* field_name);
 #define FACILITIES_TO_STORE_MANIPULATION_STORE_NOT_LOADED		1
 #define FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE		2
 #define FACILITIES_TO_STORE_MANIPULATION_ALGORITHM_UNSUPPORTED	3
+#define FACILITIES_TO_PASSWORD_MANIPULATION_INVALID_LENGTH		4
+#define FACILITIES_TO_PASSWORD_MANIPULATION_INVALID_FORMAT		5
 
 int facility_to(char* field_value);
 
@@ -108,7 +113,7 @@ int facility_fetch(unsigned long id);
 #define FACILITIES_GENERATE_STORE_INIT_NOT_COMPLETE		2
 #define FACILITIES_GENERATE_STORE_LOCKED				3
 
-int facility_generate(char* identifier, char* format, unsigned int length);
+int facility_generate(char* identifier);
 
 int facility_remove(unsigned long id);
 
