@@ -3,6 +3,12 @@
 #include<string.h>
 #include<unistd.h>
 
+#ifdef WIN32
+#include<io.h>
+#define F_OK 0
+#define access _access
+#endif
+
 #include "facilities.h"
 
 #include "passutil.h"
