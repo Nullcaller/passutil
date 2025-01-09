@@ -79,7 +79,7 @@ int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_vali
 	int res = -2;
 
 	while(res < 0) {
-		printf(prompt);
+		fputs(prompt, stdout);
 		printf(" (");
 
 		unsigned int options_length = strlen(options_LOWERCASE);
