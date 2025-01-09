@@ -120,6 +120,26 @@ int facility_to(char* field_value)
 	return FACILITIES_OK;
 }
 
+int facility_init()
+{
+	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
+	if(FACILITIES_STORE_LOADED)
+		return FACILITIES_INIT_STORE_ALREADY_LOADED;
+
+	Store* store = store_construct();
+
+	loaded_store = store;
+	free(loaded_store_path);
+	loaded_store_path = NULL;
+	FACILITIES_SET_STORE_LOADED(true);
+	FACILITIES_SET_STORE_DIRTY(true);
+	FACILITIES_SET_STORE_INIT_COMPLETE(false);
+
+	return FACILITIES_OK;
+}
+
 int facility_load(char* path)
 {
 	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
@@ -160,6 +180,7 @@ int facility_load(char* path)
 	loaded_store = store;
 	loaded_store_path = strcpymalloc(path);
 	FACILITIES_SET_STORE_LOADED(true);
+	FACILITIES_SET_STORE_INIT_COMPLETE(true);
 
 	return FACILITIES_OK;
 }
@@ -180,6 +201,9 @@ int facility_save_as(char* path) {
 
 	if(!FACILITIES_STORE_LOADED)
 		return FACILITIES_SAVE_STORE_NOT_LOADED;
+
+	if(!FACILITIES_STORE_INIT_COMPLETE)
+		return FACILITIES_SAVE_STORE_INIT_NOT_COMPLETE;
 
 	unsigned int path_length = strlen(path);
 	unsigned int ext_metadata_length = strlen(STORAGE_EXTENSION_METADATA);
