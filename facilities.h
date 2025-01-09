@@ -104,7 +104,11 @@ int facility_close();
 
 int facility_fetch(unsigned long id);
 
-int facility_gen(char* identifier, unsigned short length);
+#define FACILITIES_GENERATE_STORE_NOT_LOADED			1
+#define FACILITIES_GENERATE_STORE_INIT_NOT_COMPLETE		2
+#define FACILITIES_GENERATE_STORE_LOCKED				3
+
+int facility_generate(char* identifier, char* format, unsigned int length);
 
 int facility_remove(unsigned long id);
 

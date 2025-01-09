@@ -15,6 +15,7 @@
 #include "pseudoshell.h"
 #include "util.h"
 #include "storage.h"
+#include "generation.h"
 
 int facility_switch_mode(unsigned short new_mode) {
 	unsigned short allowed_mode_count = 4;
@@ -366,7 +367,23 @@ int facility_close() {
 
 int facility_fetch(unsigned long id);
 
-int facility_gen(char* identifier, unsigned short length);
+int facility_generate(char* identifier, char* format, unsigned int length) {
+	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
+	if(!FACILITIES_STORE_LOADED)
+		return FACILITIES_GENERATE_STORE_NOT_LOADED;
+
+	if(!FACILITIES_STORE_INIT_COMPLETE)
+		return FACILITIES_GENERATE_STORE_INIT_NOT_COMPLETE;
+	
+	if(!FACILITIES_STORE_UNLOCKED)
+		return FACILITIES_GENERATE_STORE_LOCKED;
+
+	generate_password_and_append(loaded_store, identifier, format, length);
+
+	return FACILITIES_OK;
+}
 
 int facility_remove(unsigned long id);
 
