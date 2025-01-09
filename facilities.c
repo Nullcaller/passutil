@@ -10,8 +10,7 @@
 #include "util.h"
 #include "storage.h"
 
-int facility_switch_mode(unsigned short new_mode)
-{
+int facility_switch_mode(unsigned short new_mode) {
 	unsigned short allowed_mode_count = 4;
 	unsigned short allowed_modes[] = {
 		FACILITIES_MODE_STORE_MANIPULATION,
@@ -34,8 +33,7 @@ int facility_switch_mode(unsigned short new_mode)
 	return FACILITIES_OK;
 }
 
-int facility_set(char* new_field_name)
-{
+int facility_set(char* new_field_name) {
 	unsigned short mode_store_manipulation_allowed_field_name_count = 3;
 	char* mode_store_manipulation_allowed_field_names[] = {
 		"algorithm",
@@ -78,8 +76,7 @@ int facility_set(char* new_field_name)
 	return FACILITIES_OK;
 }
 
-int facility_to(char* field_value)
-{
+int facility_to(char* field_value) {
 	switch(mode) {
 		case FACILITIES_MODE_STORE_MANIPULATION:
 			if(!FACILITIES_STORE_LOADED)
@@ -120,8 +117,7 @@ int facility_to(char* field_value)
 	return FACILITIES_OK;
 }
 
-int facility_init()
-{
+int facility_init() {
 	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
 		return FACILITIES_WRONG_MODE;
 
@@ -140,8 +136,7 @@ int facility_init()
 	return FACILITIES_OK;
 }
 
-int facility_load(char* path)
-{
+int facility_load(char* path) {
 	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
 		return FACILITIES_WRONG_MODE;
 
@@ -208,7 +203,7 @@ int facility_save_as(char* path) {
 	unsigned int path_length = strlen(path);
 	unsigned int ext_metadata_length = strlen(STORAGE_EXTENSION_METADATA);
 	unsigned int ext_master_length = strlen(STORAGE_EXTENSION_MASTER);
-	
+
 	char* path_metadata_file = malloc(sizeof(char)*(path_length+ext_metadata_length+1));
 	char* path_master_file = malloc(sizeof(char)*(path_length+ext_master_length+1));
 
@@ -253,29 +248,23 @@ int facility_save_as(char* path) {
 
 	fclose(metadata_file);
 	fclose(master_file);
-	
+
 	return FACILITIES_OK;
 }
 
-int facility_close()
-{
-	if (mode != FACILITIES_MODE_STORE_MANIPULATION)
+int facility_close() {
+	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
 		return FACILITIES_WRONG_MODE;
 
-	if (!FACILITIES_STORE_LOADED)
+	if(!FACILITIES_STORE_LOADED)
 		return FACILITIES_CLOSE_STORE_NOT_LOADED;
 
-	if (FACILITIES_STORE_DIRTY)
-	{
-		if (interactive)
-		{
-			if (!present_yesno_prompt("There are unsaved changes to the store. If the store is closed, THEY WILL BE LOST. Close regardless?", true))
+	if(FACILITIES_STORE_DIRTY) {
+		if(interactive) {
+			if(!present_yesno_prompt("There are unsaved changes to the store. If the store is closed, THEY WILL BE LOST. Close regardless?", true))
 				return FACILITIES_CLOSE_DIRTY_DISCARD_DENIED;
-		}
-		else
-		{
-			if (!yes)
-			{
+		} else {
+			if(!yes) {
 				printf("The store contains unsaved changes. Aborting store close.\n(Use -y option to override)");
 				return FACILITIES_CLOSE_DIRTY_DISCARD_DENIED;
 			}
