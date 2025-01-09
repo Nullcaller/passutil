@@ -116,15 +116,13 @@ int facility_save_as(char* path) {
 	return FACILITIES_OK;
 }
 
-int facility_close();
-
-int facility_fetch(char* identifier);
+int facility_fetch(unsigned long id);
 
 int facility_gen(char* identifier, unsigned short length);
 
-int facility_remove(char* identifier);
+int facility_remove(unsigned long id);
 
-int facility_memorize(char* identifier);
+int facility_memorize(unsigned long id);
 
 int facility_memorize_settings_get(char* setting_name);
 
