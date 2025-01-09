@@ -3,6 +3,15 @@
 
 /*** CURRENT APPLICATION STATE DESCRIPTION ***/
 
+#define FACILITIES_MODE_STORE_MANIPULATION 0
+#define FACILITIES_MODE_PASSWORD_MANIPULATION 1
+#define FACILITIES_MODE_MEMORIZATION 2
+#define FACILITIES_MODE_TRANSFER 3
+
+static unsigned short mode = FACILITIES_MODE_STORE_MANIPULATION;
+
+static char *field_name = NULL;
+
 static Store* loaded_store = NULL;
 static char* loaded_store_path = NULL;
 
@@ -26,7 +35,12 @@ static unsigned long facilities_state = 0;
 
 /*** FACILITIES ***/
 
-#define FACILITIES_OK 0
+#define FACILITIES_OK 			0
+#define FACILITIES_WRONG_MODE	-100
+
+#define FACILITIES_SWITCH_MODE_UNKNOWN_MODE		1
+
+int facility_switch_mode(unsigned short new_mode);
 
 #define FACILITIES_LOAD_STORE_ALREADY_LOADED	1
 #define FACILITIES_LOAD_FILE_ERROR				-1

@@ -10,7 +10,35 @@
 #include "util.h"
 #include "storage.h"
 
-int facility_load(char* path) {
+int facility_switch_mode(unsigned short new_mode)
+{
+	unsigned short allowed_mode_count = 4;
+	unsigned short allowed_modes[] = {
+		FACILITIES_MODE_STORE_MANIPULATION,
+		FACILITIES_MODE_PASSWORD_MANIPULATION,
+		FACILITIES_MODE_MEMORIZATION,
+		FACILITIES_MODE_TRANSFER
+	};
+
+	bool mode_allowed = false;
+	for(unsigned short it = 0; it < allowed_mode_count; it++)
+		if(new_mode == allowed_modes[it]) {
+			mode_allowed = true;
+			break;
+		}
+
+	if(!mode_allowed)
+		return FACILITIES_SWITCH_MODE_UNKNOWN_MODE;
+
+	mode = new_mode;
+	return FACILITIES_OK;
+}
+
+int facility_load(char* path)
+{
+	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
 	if(FACILITIES_STORE_LOADED)
 		return FACILITIES_LOAD_STORE_ALREADY_LOADED;
 
@@ -58,6 +86,9 @@ int facility_save() {
 }
 
 int facility_save_as(char* path) {
+	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
 	if(path == NULL)
 		return FACILITIES_SAVE_NO_PATH_PROVIDED;
 
