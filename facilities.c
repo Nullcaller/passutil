@@ -267,7 +267,8 @@ int facility_close() {
 				return FACILITIES_CLOSE_DIRTY_DISCARD_DENIED;
 		} else {
 			if(!yes) {
-				printf("The store contains unsaved changes. Aborting store close.\n(Use -y option to override)");
+				if(!quiet)
+					printf("The store contains unsaved changes. Aborting store close.\n(Use -y option to override)");
 				return FACILITIES_CLOSE_DIRTY_DISCARD_DENIED;
 			}
 		}
