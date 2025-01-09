@@ -84,24 +84,29 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	Store* store = store_construct();
-	store->algorithm = "AES256";
-	store->shuffle_key_format = FORMAT_AZaz09;
-	generate_shuffle_key(&store->shuffle_key, store->shuffle_key_format);
-	store->shuffled_key = shuffle("HelloWorld", store->shuffle_key, store->shuffle_key_format);
+	facility_init();
+	facility_set("algorithm");
+	facility_to("AES256");
+	char* shuffle_key;
+	char* shuffle_key_format = FORMAT_AZaz09;
+	generate_shuffle_key(&shuffle_key, shuffle_key_format);
+	char* shuffled_key = shuffle("HelloWorld", shuffle_key, shuffle_key_format);
+	store_copy_and_insert_key(loaded_store, shuffled_key, shuffle_key, shuffle_key_format);
+	free(shuffle_key);
+	free(shuffled_key);
 
-	Password* password = generate_password_and_append(store, "Some Service", FORMAT_AZaz09, 10);
+	Password* password = generate_password_and_append(loaded_store, "Some_Service", FORMAT_AZaz09, 10);
 	char* plain_password_1 = password_read_plain(password);
 	printf("%s\n", plain_password_1);
 
 	unsigned int sm_length;
-	char* metadata = store_serialize_metadata(store, &sm_length);
+	char* metadata = store_serialize_metadata(loaded_store, &sm_length);
 	printf("%d:\n%s\n", sm_length, metadata);
 
 	//length = password->encrypted_byte_length;
 	//unsigned char* pseq = password->encrypted_password; 
 	unsigned int ps_length;
-	unsigned char* pseq = store_serialize_password_sequence(store, &ps_length);
+	unsigned char* pseq = store_serialize_password_sequence(loaded_store, &ps_length);
 	for(unsigned int it = 0; it < ps_length; it++) {
 		if(it % 10 == 0)
 			printf("%05d\t", it);
@@ -111,9 +116,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("\n");
-
-	loaded_store = store;
-	FACILITIES_SET_STORE_LOADED(true);
 
 	int save_debug;
 	if((save_debug = facility_save_as("test")) != FACILITIES_OK) {
@@ -138,8 +140,7 @@ int main(int argc, char* argv[]) {
 	//Store* store_new;
 	//store_load(metadata_file, master_file, &store_new);
 
-	loaded_store = NULL;
-	FACILITIES_SET_STORE_LOADED(false);
+	facility_close();
 
 	int load_debug;
 	if((load_debug = facility_load("test")) != FACILITIES_OK) {
@@ -148,7 +149,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	Store* store_new = loaded_store;
-	Password* password_new = store_find_password(store_new, "Some Service");
+	Password* password_new = store_find_password(store_new, "Some_Service");
 
 	store_new->shuffle_key_format = FORMAT_AZaz09;
 	generate_shuffle_key(&store_new->shuffle_key, store_new->shuffle_key_format);
@@ -157,10 +158,10 @@ int main(int argc, char* argv[]) {
 	char* plain_password_2 = password_read_plain(password_new);
 	printf("%s\n", plain_password_2);
 
-	metadata = store_serialize_metadata(store, &sm_length);
+	metadata = store_serialize_metadata(loaded_store, &sm_length);
 	printf("%d:\n%s\n", sm_length, metadata);
 
-	pseq = store_serialize_password_sequence(store, &ps_length);
+	pseq = store_serialize_password_sequence(loaded_store, &ps_length);
 	for(unsigned int it = 0; it < ps_length; it++) {
 		if(it % 10 == 0)
 			printf("%05d\t", it);
