@@ -47,7 +47,8 @@ int memorize_nth_symbol(char* shuffled_password, char* shuffle_key, char* shuffl
 			continue;
 		pick = randombytes_uniform(possible_character_count);
 		characters[it] = possible_characters_actual[pick];
-		strncpy(possible_characters_actual+pick, possible_characters_actual+(pick+1), possible_character_count-pick);
+		for(unsigned int j = pick+1; j <= possible_character_count; j++)
+			possible_characters_actual[j-1] = possible_characters_actual[j];
 		possible_character_count--;
 	}
 	free(possible_characters_actual);
