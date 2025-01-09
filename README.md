@@ -8,7 +8,7 @@ All of the code is written with the goal of being humanly readable, to make chec
 
 **SECURITY IS NOT GUARANTEED**
 
-Memory leaks are currently **guaranteed** and the code **spaghetti**.
+Memory leaks are currently **guaranteed** and the code is **spaghetti**.
 
 Data loss *is not guranateed*. However, **data loss *is* highly likely**.
 
