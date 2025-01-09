@@ -42,6 +42,16 @@ static unsigned long facilities_state = 0;
 
 int facility_switch_mode(unsigned short new_mode);
 
+#define FACILITIES_SET_WRONG_FIELD_NAME_FOR_MODE	1
+
+int facility_set(char* field_name);
+
+#define FACILITIES_TO_STORE_MANIPULATION_STORE_NOT_LOADED		1
+#define FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE		2
+#define FACILITIES_TO_STORE_MANIPULATION_ALGORITHM_UNSUPPORTED	3
+
+int facility_to(char* field_value);
+
 #define FACILITIES_LOAD_STORE_ALREADY_LOADED	1
 #define FACILITIES_LOAD_FILE_ERROR				-1
 #define FACILITIES_LOAD_DESERIALIZE_ERROR		-2

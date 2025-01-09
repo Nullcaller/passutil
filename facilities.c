@@ -34,6 +34,92 @@ int facility_switch_mode(unsigned short new_mode)
 	return FACILITIES_OK;
 }
 
+int facility_set(char* new_field_name)
+{
+	unsigned short mode_store_manipulation_allowed_field_name_count = 3;
+	char* mode_store_manipulation_allowed_field_names[] = {
+		"algorithm",
+		"key_verification_algorithm",
+		"key_verification_algorithm_rounds"
+	};
+	unsigned short mode_password_manipulation_allowed_field_name_count = 0;
+	char* mode_password_manipulation_allowed_field_names[] = {};
+	unsigned short mode_memorization_allowed_field_name_count = 0;
+	char* mode_memorization_allowed_field_names[] = {};
+	unsigned short mode_transfer_allowed_field_name_count = 0;
+	char* mode_transfer_allowed_field_names[] = {};
+
+	unsigned short allowed_field_name_counts[] = {
+		mode_store_manipulation_allowed_field_name_count,
+		mode_password_manipulation_allowed_field_name_count,
+		mode_memorization_allowed_field_name_count,
+		mode_transfer_allowed_field_name_count
+	};
+	char** allowed_field_names[] = {
+		mode_store_manipulation_allowed_field_names,
+		mode_password_manipulation_allowed_field_names,
+		mode_memorization_allowed_field_names,
+		mode_transfer_allowed_field_names
+	};
+
+	bool field_name_allowed = false;
+	for(unsigned short it = 0; it < allowed_field_name_counts[mode]; it++)
+		if(strcmp(allowed_field_names[it], new_field_name) == 0) {
+			field_name_allowed = true;
+			break;
+		}
+
+	if(!field_name_allowed)
+		return FACILITIES_SET_WRONG_FIELD_NAME_FOR_MODE;
+
+	free(field_name);
+	field_name = strcpymalloc(new_field_name);
+
+	return FACILITIES_OK;
+}
+
+int facility_to(char* field_value)
+{
+	switch(mode) {
+		case FACILITIES_MODE_STORE_MANIPULATION:
+			if(!FACILITIES_STORE_LOADED)
+				return FACILITIES_TO_STORE_MANIPULATION_STORE_NOT_LOADED;
+
+			if(strcmp(field_name, "algorithm") == 0) {
+				bool algorithm_supported = false;
+				for (unsigned short it = 0; it < storage_supported_algorithm_count; it++)
+					if (strcmp(field_value, storage_supported_algorithms[it]) == 0) {
+						algorithm_supported = true;
+						break;
+					}
+				if (!algorithm_supported)
+					return FACILITIES_TO_STORE_MANIPULATION_ALGORITHM_UNSUPPORTED;
+
+				if (!FACILITIES_STORE_INIT_COMPLETE) {
+					loaded_store->algorithm = strcpymalloc(field_value);
+					FACILITIES_SET_STORE_INIT_COMPLETE(true);
+					FACILITIES_SET_STORE_DIRTY(true);
+				} else {
+					// TODO Change encyrption algorithm
+				}
+			} else if(strcmp(field_name, "key_verification_algorithm") == 0) {
+				if(!loaded_store->key_verifiable)
+					return FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE;
+
+				// TODO Change key verification algorithm
+			} else if(strcmp(field_name, "key_verification_algorithm_rounds") == 0) {
+				if(!loaded_store->key_verifiable)
+					return FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE;
+
+				// TODO Change key verification algorithm rounds amount
+			}
+
+			break;
+	}
+
+	return FACILITIES_OK;
+}
+
 int facility_load(char* path)
 {
 	if(mode != FACILITIES_MODE_STORE_MANIPULATION)
