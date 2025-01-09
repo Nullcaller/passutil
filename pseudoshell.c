@@ -63,5 +63,5 @@ int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_vali
 }
 
 bool present_yesno_prompt(char* prompt, bool repeat_until_valid) {
-	return present_prompt(prompt, "yn", repeat_until_valid);
+	return !present_prompt(prompt, "yn", repeat_until_valid);
 }
