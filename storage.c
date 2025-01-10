@@ -644,8 +644,6 @@ bool store_load(FILE* metadata_file, FILE* master_file, Store** store) {
 		return false;
 	}
 
-	printf("%d\n", serialized_password_sequence_length);
-
 	Store* _store = store_deserialize(serialized_metadata, serialized_metadata_length, serialized_password_sequence, serialized_password_sequence_length);
 
 	free(serialized_metadata);
