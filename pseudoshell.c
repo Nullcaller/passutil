@@ -187,7 +187,7 @@ void check_res_print_err_or_success_msg(int res, char* success_msg) {
 		if(err_str != NULL)
 			printf("%s\n", err_str);
 		else
-			printf("Unknown error occured.\n");
+			printf("Unknown error occured (%d).\n", res);
 	} else
 		fputs(success_msg, stdout);
 }
