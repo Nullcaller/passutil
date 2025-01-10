@@ -146,10 +146,6 @@ int facility_remove(unsigned long id);
 
 int facility_memorize(unsigned long id);
 
-int facility_memorize_settings_get(char* setting_name);
-
-int facility_memorize_settings_set(char* setting_name, char* setting_value);
-
 int facility_transfer_send(int mode);
 
 int facility_transfer_receive(int mode);
