@@ -154,4 +154,8 @@ int facility_send();
 
 int facility_receive();
 
+#define FACILITIES_EXIT_DIRTY_DISACRD_DENIED		47
+
+int facility_exit();
+
 #endif

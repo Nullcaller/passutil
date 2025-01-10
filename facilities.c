@@ -625,3 +625,23 @@ int facility_memorize(unsigned long id);
 int facility_send();
 
 int facility_receive();
+
+int facility_exit() {
+	if(!FACILITIES_STORE_LOADED)
+		return FACILITIES_OK;
+	
+	if(FACILITIES_STORE_DIRTY) {
+		if(interactive) {
+			if(!present_yesno_prompt("Loaded store has unsaved changes. Exit regardless?", true))
+				return FACILITIES_EXIT_DIRTY_DISACRD_DENIED;
+		} else {
+			if(!yes) {
+				if(!quiet)
+					printf("The store contains unsaved changes. Aborting exit.\n(Use -y option to override)\n");
+				return FACILITIES_EXIT_DIRTY_DISACRD_DENIED;
+			}
+		}
+	}
+
+	return FACILITIES_OK;
+}
