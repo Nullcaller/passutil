@@ -131,6 +131,10 @@ int facility_find(char* identifier);
 
 int facility_generate(char* identifier);
 
+#define FACILITIES_REMOVE_STORE_NOT_LOADED			1
+#define FACILITIES_REMOVE_STORE_INIT_NOT_COMPLETE	2
+#define FACILTIIES_REMOVE_REMOVED_PASSWORD_IS_NULL	3
+
 int facility_remove(unsigned long id);
 
 int facility_memorize(unsigned long id);

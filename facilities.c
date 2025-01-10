@@ -503,7 +503,25 @@ int facility_generate(char* identifier) {
 	return FACILITIES_OK;
 }
 
-int facility_remove(unsigned long id);
+int facility_remove(unsigned long id) {
+	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
+	if(!FACILITIES_STORE_LOADED)
+		return FACILITIES_REMOVE_STORE_NOT_LOADED;
+
+	if(!FACILITIES_STORE_INIT_COMPLETE)
+		return FACILITIES_REMOVE_STORE_INIT_NOT_COMPLETE;
+
+	Password* removed = store_remove_password(loaded_store, id);
+
+	if(removed == NULL)
+		return FACILTIIES_REMOVE_REMOVED_PASSWORD_IS_NULL;
+
+	FACILITIES_SET_STORE_DIRTY(true);
+
+	return FACILITIES_OK;
+}
 
 int facility_memorize(unsigned long id);
 
