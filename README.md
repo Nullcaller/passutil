@@ -1,14 +1,14 @@
 # passutil (WIP)
 
-A simple **WORK IN-PROGRESS** command-line utility to store and memorize passwords using libsodium and OpenSSL. Stores passwords in an AES256-encrypted form in a single blob. Metadata is stored separately in an unencrypted form.
+A simple **work in-progress** command-line utility to store and memorize passwords using libsodium and OpenSSL. Stores passwords in an AES256-encrypted form in a single blob. Metadata is stored separately in an unencrypted form.
 
-By default, no AES256 encryption key validation methods are avilable. `passutil` relies on the user to recognize whether the presented passwords are correct. This way, if the passwords are generated with `passutil`, a potential attacker with access to the password store will pretty much be unable to formulate a hypothesis when attempting to decrypt the passwords. At least, that's the hope.
+By default, no encryption key validation methods are avilable. `passutil` relies on the user to recognize whether the presented passwords are correct. This way, if the passwords are generated with `passutil`, a potential attacker with access to the password store will pretty much be unable to formulate a hypothesis when attempting to decrypt the passwords. At least, that's the hope.
 
-All of the code is written with the goal of being humanly readable, to make checking it easier.
+All of the code is written with the goal of being humanly readable, to make checking it easier. This results in variable names akin to `first_argument_except_for_the_command_argument_except_that_weird_edgecase_where...`. This is intentional. And keep in mind: human-readable code is the goal, but there is no guarantee that this goal will ever be achieved.
 
 **SECURITY IS NOT GUARANTEED**
 
-Memory leaks are currently **guaranteed** and the code is **spaghetti**.
+Memory leaks are practically **guaranteed** and the code is **spaghetti**.
 
 Data loss *is not guranateed*. However, **data loss *is* highly likely**.
 
@@ -39,9 +39,9 @@ Consider this example: password = `ABE`, shuffle key = `DCFABE`, shuffle key for
 
 ## TODO
 
-* Achieve MVP state
-* Fix all memory leaks
+* Implement all mentioned features (memorization helper and transfer are not currently implemented)
+* Fix memory leaks
 * Make use of libsodium's security features (secure mallocs, RAM managements and stuff)
-* Encrypt metadata with a separate password
+* Encrypt metadata with a separate password?
 * Make more use of password shuffling
 * Use OpenSSL's EVP instead of direct AES functions
