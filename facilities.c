@@ -418,6 +418,9 @@ int facility_save_as(char* path) {
 	if(path == NULL)
 		return FACILITIES_SAVE_NO_PATH_PROVIDED;
 
+	if(strlen(path) <= 0)
+		return FACILITIES_SAVE_AS_EMPTY_PATH;
+
 	if(!FACILITIES_STORE_LOADED)
 		return FACILITIES_SAVE_STORE_NOT_LOADED;
 
@@ -559,6 +562,9 @@ int facility_find(char* identifier) {
 	if(!FACILITIES_STORE_INIT_COMPLETE)
 		return FACILITIES_FIND_STORE_INIT_NOT_COMPLETE;
 
+	if(strlen(identifier) <= 0)
+		return FACILITIES_FIND_EMPTY_IDENTIFIER;
+
 	unsigned long count;
 	unsigned long* ids;
 	count = store_find_passwords(loaded_store, identifier, &ids);
@@ -592,6 +598,9 @@ int facility_generate(char* identifier) {
 	
 	if(!FACILITIES_STORE_UNLOCKED)
 		return FACILITIES_GENERATE_STORE_LOCKED;
+
+	if(strlen(identifier) <= 0)
+		return FACILITIES_GENERARE_EMPTY_IDENTIFIER;
 
 	generate_password_and_append(loaded_store, identifier, password_format, password_length);
 

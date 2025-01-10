@@ -119,6 +119,8 @@ int facility_lock();
 
 int facility_save();
 
+#define FACILITIES_SAVE_AS_EMPTY_PATH	50
+
 int facility_save_as(char* path);
 
 #define FACILITIES_CLOSE_STORE_NOT_LOADED		29
@@ -139,12 +141,14 @@ int facility_fetch(unsigned long id);
 #define FACILITIES_FIND_STORE_NOT_LOADED			38
 #define FACILITIES_FIND_STORE_INIT_NOT_COMPLETE		39
 #define FACILITIES_FIND_NO_PASSWORDS_FOUND			40
+#define FACILITIES_FIND_EMPTY_IDENTIFIER			49
 
 int facility_find(char* identifier);
 
 #define FACILITIES_GENERATE_STORE_NOT_LOADED			41
 #define FACILITIES_GENERATE_STORE_INIT_NOT_COMPLETE		42
 #define FACILITIES_GENERATE_STORE_LOCKED				43
+#define FACILITIES_GENERARE_EMPTY_IDENTIFIER			48
 
 int facility_generate(char* identifier);
 
