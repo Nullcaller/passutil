@@ -42,7 +42,7 @@ int facility_switch_mode(unsigned short new_mode) {
 	return FACILITIES_OK;
 }
 
-int facility_set(char* new_field_name) {
+bool is_facility_field_name_allowed(char* field_name_to_validate) {
 	unsigned short mode_store_manipulation_allowed_field_name_count = 3;
 	char* mode_store_manipulation_allowed_field_names[] = {
 		"algorithm",
@@ -74,12 +74,16 @@ int facility_set(char* new_field_name) {
 
 	bool field_name_allowed = false;
 	for(unsigned short it = 0; it < allowed_field_name_counts[mode]; it++)
-		if(strcmp(allowed_field_names[mode][it], new_field_name) == 0) {
+		if(strcmp(allowed_field_names[mode][it], field_name_to_validate) == 0) {
 			field_name_allowed = true;
 			break;
 		}
+	
+	return field_name_allowed;
+}
 
-	if(!field_name_allowed)
+int facility_set(char* new_field_name) {
+	if(!is_facility_field_name_allowed(new_field_name))
 		return FACILITIES_SET_WRONG_FIELD_NAME_FOR_MODE;
 
 	free(field_name);
