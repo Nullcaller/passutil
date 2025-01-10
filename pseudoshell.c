@@ -224,7 +224,7 @@ int execute_command(char* command, int argc, char** argv) {
 	if(strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
 		return facility_exit() == FACILITIES_OK ? PSEUDOSHELL_OK : PSEUDOSHELL_CONTINUE;
 	else if(strcmp(command, "init") == 0)
-		check_res_print_err_or_success_msg(facility_init(), "Store initiated.\n");
+		check_res_print_err_or_success_msg(facility_init(), "Store initialized.\n");
 	else if(strcmp(command, "set") == 0) {
 		first_non_empty_argument_after_command = find_first_non_empty_argument_after_command(command, argc, argv);
 		if(first_non_empty_argument_after_command < 0) {
