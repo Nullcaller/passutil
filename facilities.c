@@ -141,7 +141,7 @@ int facility_get(char* field_name_to_get) {
 						if(loaded_store->key_verification_algorithm == NULL)
 							printf("NULL\n");
 						else
-							pritnf("STATE INVALID: %s\n", loaded_store->key_verification_algorithm);
+							printf("STATE INVALID: %s\n", loaded_store->key_verification_algorithm);
 					} else {
 						if(loaded_store->key_verification_algorithm == NULL)
 							printf("Store does not allow key verification.\nHence, key verification algorithm is NULL.\n");
