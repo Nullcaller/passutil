@@ -8,6 +8,13 @@
 #define FACILITIES_DISPLAY_DEFAULT_COUNT	20
 #define FACILITIES_DISPLAY_BUFFER_SIZE		4096
 
+static char* mode_short_names[] = {
+	"store",
+	"password",
+	"memorize",
+	"transfer"
+};
+
 /*** CURRENT APPLICATION STATE DESCRIPTION ***/
 
 #define FACILITIES_MODE_STORE_MANIPULATION 0
@@ -16,12 +23,6 @@
 #define FACILITIES_MODE_TRANSFER 3
 
 static unsigned short mode = FACILITIES_MODE_STORE_MANIPULATION;
-static char* mode_short_names[] = {
-	"store",
-	"password",
-	"memorize",
-	"transfer"
-};
 
 static char *field_name = NULL;
 
