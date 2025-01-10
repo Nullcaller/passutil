@@ -57,6 +57,12 @@ int facility_switch_mode(unsigned short new_mode);
 
 int facility_set(char* field_name);
 
+#define FACILITIES_GET_WRONG_FIELD_NAME_FOR_MODE				1
+#define FACILITIES_GET_NOT_IMPLEMENTED							2
+#define FACILITIES_GET_STORE_MANIPULATION_STORE_NOT_LOADED		3
+
+int facility_get(char* field_name_to_get);
+
 #define FACILITIES_TO_STORE_MANIPULATION_STORE_NOT_LOADED		1
 #define FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE		2
 #define FACILITIES_TO_STORE_MANIPULATION_ALGORITHM_UNSUPPORTED	3

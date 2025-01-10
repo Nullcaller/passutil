@@ -92,6 +92,82 @@ int facility_set(char* new_field_name) {
 	return FACILITIES_OK;
 }
 
+int facility_get(char* field_name_to_get) {
+	if(!is_facility_field_name_allowed(field_name_to_get))
+		return FACILITIES_GET_WRONG_FIELD_NAME_FOR_MODE;
+
+	switch(mode) {
+		case FACILITIES_MODE_STORE_MANIPULATION:
+			if(!FACILITIES_STORE_LOADED)
+				return FACILITIES_GET_STORE_MANIPULATION_STORE_NOT_LOADED;
+
+			if(strcmp(field_name, "algorithm") == 0) {
+				if(loaded_store->algorithm == NULL) {
+					if(!quiet) {
+						printf("Algorithm for the loaded store is NULL.\n");
+						if(FACILITIES_STORE_INIT_COMPLETE)
+							printf("Note: store IS marked as initialized.\nWarning: this state is invalid, and you should probably report this.\n");
+						else
+							printf("Note: store IS NOT marked as initialized.\n");
+					} else
+						printf("NULL\n");
+				} else
+					printf("%s\n", loaded_store->algorithm);
+			} else if(strcmp(field_name, "key_verification_algorithm") == 0) {
+				if(loaded_store->key_verifiable) {
+					if(quiet) {
+						if(loaded_store->key_verification_algorithm == NULL)
+							printf("STATE INVALID: NULL\n");
+						else
+							printf("%s\n", loaded_store->key_verification_algorithm);
+					} else {
+						if(loaded_store->key_verification_algorithm == NULL) {
+							printf("Key verification algorithm for the loaded store is NULL. But the store allows key verifications.\nWarning: this state is invalid, and you should probably report this.\n");
+						} else
+							printf("%s\n", loaded_store->key_verification_algorithm);
+					}
+				} else {
+					if(quiet) {
+						if(loaded_store->key_verification_algorithm == NULL)
+							printf("NULL\n");
+						else
+							pritnf("STATE INVALID: %s\n", loaded_store->key_verification_algorithm);
+					} else {
+						if(loaded_store->key_verification_algorithm == NULL)
+							printf("Store does not allow key verification.\nHence, key verification algorithm is NULL.\n");
+						else
+							printf("Store does not allow key verification. But key verification algorithm IS NOT NULL.\nWarning: this state is invalid, and you should probably report this.\n");
+					}
+				}
+			} else if(strcmp(field_name, "key_verification_algorithm_rounds") == 0) {
+				// TODO algorithm rounds tree
+				return FACILITIES_GET_NOT_IMPLEMENTED;
+			} else
+				return FACILITIES_GET_NOT_IMPLEMENTED;
+
+			break;
+		case FACILITIES_MODE_PASSWORD_MANIPULATION:
+			if(strcmp(field_name, "format") == 0) {
+				if(quiet)
+					puts(password_format);
+				else
+					printf("Current password format: `%s`\n", password_format);
+			} else if(strcmp(field_name, "length") == 0) {
+				if(quiet)
+					printf("%d\n", password_length);
+				else
+					printf("Current password length: %d\n", password_length);
+			} else
+				return FACILITIES_GET_NOT_IMPLEMENTED;
+
+			break;
+		default:
+			return FACILITIES_GET_NOT_IMPLEMENTED;
+	}
+
+	return FACILITIES_OK;
+}
+
 int facility_to(char* field_value) {
 	switch(mode) {
 		case FACILITIES_MODE_STORE_MANIPULATION:
