@@ -450,7 +450,7 @@ int facility_save_as(char* path) {
 		} else {
 			if(!yes) {
 				if(!quiet)
-					printf("Files already exist. Aborting.\n(Use -y option to override)");
+					printf("Files already exist. Aborting.\n(Use -y option to override)\n");
 				free(path_metadata_file);
 				free(path_master_file);
 				return FACILITIES_SAVE_OVERWRITE_DENIED;
@@ -492,7 +492,7 @@ int facility_close() {
 		} else {
 			if(!yes) {
 				if(!quiet)
-					printf("The store contains unsaved changes. Aborting store close.\n(Use -y option to override)");
+					printf("The store contains unsaved changes. Aborting store close.\n(Use -y option to override)\n");
 				return FACILITIES_CLOSE_DIRTY_DISCARD_DENIED;
 			}
 		}
