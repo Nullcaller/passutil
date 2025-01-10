@@ -11,6 +11,12 @@
 #define FACILITIES_MODE_TRANSFER 3
 
 static unsigned short mode = FACILITIES_MODE_STORE_MANIPULATION;
+static char* mode_short_names[] = {
+	"store",
+	"password",
+	"memorize",
+	"transfer"
+};
 
 static char *field_name = NULL;
 
