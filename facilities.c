@@ -11,6 +11,8 @@
 
 #include "facilities.h"
 
+#include "constants-formats.h"
+
 #include "passutil.h"
 #include "pseudoshell.h"
 #include "util.h"
