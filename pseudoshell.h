@@ -20,7 +20,8 @@ void parse_command(char* str, char** command, int* argc, char*** argv);
 #define PSEUDOSHELL_OK			0
 #define PSEUDOSHELL_CONTINUE	1
 
-#define PSEUDOSHELL_LOOP_PROMPT		"passutil> "
+#define PSEUDOSHELL_LOOP_PROMPT_START		"passutil("
+#define PSEUDOSHELL_LOOP_PROMPT_END			")> "
 
 int enter_pseudoshell_loop();
 

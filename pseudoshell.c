@@ -283,7 +283,9 @@ int enter_pseudoshell_loop() {
 
 	while(true) {
 		free_and_reset_command_variables(&command_str, &command, &argc, &argv);
-		fputs(PSEUDOSHELL_LOOP_PROMPT, stdout);
+		fputs(PSEUDOSHELL_LOOP_PROMPT_START, stdout);
+		fputs(mode_short_names[mode], stdout);
+		fputs(PSEUDOSHELL_LOOP_PROMPT_END, stdout);
 		getstr(&command_str, PSEUDOSHELL_BUFFER_SIZE);
 
 		parse_command(command_str, &command, &argc, &argv);
