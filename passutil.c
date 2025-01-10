@@ -88,6 +88,7 @@ int main(int argc, char* argv[]) {
 
 	// TODO Deny any more arguments after "--interactive" for security reasons, add a `manual override` preprocessor define
 
+	/*
 	facility_init();
 	facility_set("algorithm");
 	facility_to("AES256");
@@ -201,7 +202,7 @@ int main(int argc, char* argv[]) {
 	char* shuffled_password = shuffle(plain_password_2, shuffle_key__, shuffle_key_format__);
 
 	//memorize_direct(shuffled_password, shuffle_key__, shuffle_key_format__);
-	memorize_by_symbols(shuffled_password, shuffle_key__, shuffle_key_format__, password_new->format, 2, true, false);
+	memorize_by_symbols(shuffled_password, shuffle_key__, shuffle_key_format__, password_new->format, 2, true, false);*/
 
 	return EXIT_CODE_SUCCESS;
 }
