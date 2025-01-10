@@ -480,6 +480,10 @@ int facility_save_as(char* path) {
 
 	FACILITIES_SET_STORE_DIRTY(false);
 
+	if(loaded_store_path != NULL)
+		free(loaded_store_path);
+	loaded_store_path = strcpymalloc(path);
+
 	return FACILITIES_OK;
 }
 
