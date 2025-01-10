@@ -111,7 +111,7 @@ int facility_get(char* field_name_to_get) {
 			if(!FACILITIES_STORE_LOADED)
 				return FACILITIES_GET_STORE_MANIPULATION_STORE_NOT_LOADED;
 
-			if(strcmp(field_name, "algorithm") == 0) {
+			if(strcmp(field_name_to_get, "algorithm") == 0) {
 				if(loaded_store->algorithm == NULL) {
 					if(!quiet) {
 						printf("Algorithm for the loaded store is NULL.\n");
@@ -123,7 +123,7 @@ int facility_get(char* field_name_to_get) {
 						printf("NULL\n");
 				} else
 					printf("%s\n", loaded_store->algorithm);
-			} else if(strcmp(field_name, "key_verification_algorithm") == 0) {
+			} else if(strcmp(field_name_to_get, "key_verification_algorithm") == 0) {
 				if(loaded_store->key_verifiable) {
 					if(quiet) {
 						if(loaded_store->key_verification_algorithm == NULL)
@@ -149,7 +149,7 @@ int facility_get(char* field_name_to_get) {
 							printf("Store does not allow key verification. But key verification algorithm IS NOT NULL.\nWarning: this state is invalid, and you should probably report this.\n");
 					}
 				}
-			} else if(strcmp(field_name, "key_verification_algorithm_rounds") == 0) {
+			} else if(strcmp(field_name_to_get, "key_verification_algorithm_rounds") == 0) {
 				// TODO algorithm rounds tree
 				return FACILITIES_GET_NOT_IMPLEMENTED;
 			} else
@@ -157,12 +157,12 @@ int facility_get(char* field_name_to_get) {
 
 			break;
 		case FACILITIES_MODE_PASSWORD_MANIPULATION:
-			if(strcmp(field_name, "format") == 0) {
+			if(strcmp(field_name_to_get, "format") == 0) {
 				if(quiet)
 					puts(password_format);
 				else
 					printf("Current password format: `%s`\n", password_format);
-			} else if(strcmp(field_name, "length") == 0) {
+			} else if(strcmp(field_name_to_get, "length") == 0) {
 				if(quiet)
 					printf("%d\n", password_length);
 				else
