@@ -182,6 +182,32 @@ void parse_command(char* str, char** command, int* argc, char*** argv) {
 	*argv = _argv;
 }
 
+void remove_empty_arguments(int* argc, char*** argv) {
+	int empty_count = 0;
+	char** argvp = *argv;
+
+	for(int it = 0; it < *argc; it++)
+		if(argvp[it][0] == '\0')
+			empty_count++;
+
+	int _argc = *argc - empty_count;
+	char** _argv = malloc(sizeof(char*)*_argc);
+
+	int pos = 0;
+	for(int it = 0; it < *argc; it++)
+		if(argvp[it][0] == '\0') {
+			free(argvp[it]);
+			continue;
+		} else {
+			_argv[pos] = (*argv)[it];
+			pos++;
+		}
+
+	free(argvp);
+	*argv = _argv;
+	*argc = _argc;
+}
+
 void check_res_print_err_or_success_msg(int res, char* success_msg) {
 	if(res != FACILITIES_OK) {
 		char* err_str = get_facility_error_message(res);
@@ -226,7 +252,11 @@ void protest_command_requires_agument(char* command) {
 	printf("'%s' command requires an argument.\n", command);
 }
 
-int execute_command(char* command_str, char* command, int argc, char** argv) {
+int execute_command(char* command_str, char** commandp, int* argcp, char*** argvp) {
+	char* command = *commandp;
+	int argc = *argcp;
+	char** argv = *argvp;
+
 	int first_non_empty_argument_after_command;
 
 	if(strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
@@ -298,6 +328,39 @@ int execute_command(char* command_str, char* command, int argc, char** argv) {
 	}
 	else if(strcmp(command, "find") == 0)
 		check_res_print_err_or_success_msg(facility_find(get_everything_after_command(command_str, command)), "");
+	else if(strcmp(command, "display") == 0) {
+		remove_empty_arguments(argcp, argvp);
+
+		argc = *argcp;
+		argv = *argvp;
+
+		unsigned long start, count;
+
+		if(argc < 2) {
+			start = 0;
+			count = 0;
+		} else {
+			char* read_str;
+
+			start = strtoul(argv[1], &read_str, 10);
+			if(start == 0 && (read_str-argv[1]) != strlen(argv[1])) {
+				printf("Couldn't parse start id.\n");
+				return PSEUDOSHELL_OK;
+			}
+
+			if(argc == 2)
+				count = 0;
+			else {
+				count = strtoul(argv[2], &read_str, 10);
+				if(count == 0 && (read_str-argv[2]) != strlen(argv[2])) {
+					printf("Couldn't parse count.\n");
+					return PSEUDOSHELL_OK;
+				}
+			}
+		}
+
+		check_res_print_err_or_success_msg(facility_display(start, count), "");
+	}
 	else if(strcmp(command, "generate") == 0)
 		check_res_print_err_or_success_msg(facility_generate(get_everything_after_command(command_str, command)), "Password generated.\n");
 	else if(strcmp(command, "remove") == 0) {
@@ -348,7 +411,7 @@ int enter_pseudoshell_loop() {
 		getstr(&command_str, PSEUDOSHELL_BUFFER_SIZE);
 
 		parse_command(command_str, &command, &argc, &argv);
-		ret = execute_command(command_str, command, argc, argv);
+		ret = execute_command(command_str, &command, &argc, &argv);
 
 		if(ret == PSEUDOSHELL_CONTINUE)
 			continue;
