@@ -219,10 +219,6 @@ void protest_command_requires_agument(char* command) {
 }
 
 int execute_command(char* command, int argc, char** argv) {
-	// TODO Command execution
-
-	// TODO Check unsaved changes on exit, return PSEUDOSHELL_CONTINUE if there are any
-
 	int first_non_empty_argument_after_command;
 
 	if(strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
