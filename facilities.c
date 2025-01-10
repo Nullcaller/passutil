@@ -413,7 +413,44 @@ int facility_close() {
 	return FACILITIES_OK;
 }
 
-int facility_fetch(unsigned long id);
+int facility_fetch(unsigned long id) { 
+	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+	
+	if(!FACILITIES_STORE_LOADED)
+		return FACILITIES_FETCH_STORE_NOT_LOADED;
+
+	if(!FACILITIES_STORE_INIT_COMPLETE)
+		return FACILITIES_FETCH_STORE_INIT_NOT_COMPLETE;
+	
+	if(!FACILITIES_STORE_UNLOCKED)
+		return FACILITIES_FETCH_STORE_LOCKED;
+
+	if(loaded_store->password_count <= id)
+		return FACILITIES_FETCH_ID_OUT_OF_BOUNDS;
+
+	Password* password = loaded_store->passwords[id];
+
+	if(password == NULL)
+		return FACILITIES_FETCH_PASSWORD_ENTRY_IS_NULL;
+
+	char* plain_password = password_read_plain(password);
+	
+	if(plain_password == NULL)
+		return FACILITIES_FETCH_PASSWORD_STRING_IS_NULL;
+
+	int res = puts(plain_password);
+	res -= 1; // account for newline
+
+	int len = strlen(plain_password);
+
+	free(plain_password);
+	
+	if(len == res)
+		return FACILITIES_OK;
+	else
+		return FACILITIES_FETCH_PRINT_FAILED;
+}
 
 int facility_find(char* identifier) {
 	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
