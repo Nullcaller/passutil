@@ -105,9 +105,13 @@ int main(int argc, char* argv[]) {
 	facility_generate("Some_Service");
 	facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION);
 	
-	Password* password = loaded_store->passwords[0];
-	char* plain_password_1 = password_read_plain(password);
-	printf("%s\n", plain_password_1);
+	//Password* password = loaded_store->passwords[0];
+	//char* plain_password_1 = password_read_plain(password);
+	//printf("%s\n", plain_password_1);
+
+	facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION);
+	facility_fetch(0);
+	facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION);
 
 	unsigned int sm_length;
 	char* metadata = store_serialize_metadata(loaded_store, &sm_length);
@@ -190,10 +194,10 @@ int main(int argc, char* argv[]) {
 	char* shuffle_key__;
 	generate_shuffle_key(&shuffle_key__, shuffle_key_format__);
 
-	char* shuffled_password = shuffle(plain_password_1, shuffle_key__, shuffle_key_format__);
+	char* shuffled_password = shuffle(plain_password_2, shuffle_key__, shuffle_key_format__);
 
 	//memorize_direct(shuffled_password, shuffle_key__, shuffle_key_format__);
-	memorize_by_symbols(shuffled_password, shuffle_key__, shuffle_key_format__, password->format, 2, true, false);
+	memorize_by_symbols(shuffled_password, shuffle_key__, shuffle_key_format__, password_new->format, 2, true, false);
 
 	return EXIT_CODE_SUCCESS;
 }
