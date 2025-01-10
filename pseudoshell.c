@@ -204,6 +204,13 @@ int find_first_non_empty_argument_after_command(char* command, int argc, char** 
 	return first_non_empty_arg_after_cmd;
 }
 
+char* get_everything_after_command(char* command_str, char* command) {
+	char* strp = command_str+strlen(command);
+	while(*strp == ' ')
+		strp++;
+	return strp;
+}
+
 char* get_specific_success_message(char* start, char* specific, char* end) {
 	char* success_msg = NULL;
 	unsigned int success_msg_allocated_length = 0;
@@ -218,7 +225,7 @@ void protest_command_requires_agument(char* command) {
 	printf("'%s' command requires an argument.\n", command);
 }
 
-int execute_command(char* command, int argc, char** argv) {
+int execute_command(char* command_str, char* command, int argc, char** argv) {
 	int first_non_empty_argument_after_command;
 
 	if(strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
@@ -264,6 +271,49 @@ int execute_command(char* command, int argc, char** argv) {
 
 		check_res_print_err_or_success_msg(facility_get(argv[first_non_empty_argument_after_command]), "");
 	}
+	else if(strcmp(command, "load") == 0)
+		check_res_print_err_or_success_msg(facility_load(get_everything_after_command(command_str, command)), "Store loaded.\n");
+	else if(strcmp(command, "save") == 0)
+		check_res_print_err_or_success_msg(facility_save(), "Store saved.\n");
+	else if(strcmp(command, "save-as") == 0)
+		check_res_print_err_or_success_msg(facility_save_as(get_everything_after_command(command_str, command)), "Store saved.\n");
+	else if(strcmp(command, "unlock") == 0)
+		check_res_print_err_or_success_msg(facility_unlock(), "Store unlocked.\n");
+	else if(strcmp(command, "lock") == 0)
+		check_res_print_err_or_success_msg(facility_lock(), "Store locked.\n");
+	else if(strcmp(command, "close") == 0)
+		check_res_print_err_or_success_msg(facility_close(), "Store closed.\n");
+	else if(strcmp(command, "fetch") == 0) {
+		char* read_str;
+		char* str = get_everything_after_command(command_str, command);
+
+		unsigned long id = strtoul(str, &read_str, 10);
+		if(id == 0 && (read_str-str) != strlen(str)) {
+			printf("Couldn't parse the password id.\n");
+			return PSEUDOSHELL_OK;
+		}
+
+		check_res_print_err_or_success_msg(facility_fetch(id), "");
+	}
+	else if(strcmp(command, "find") == 0)
+		check_res_print_err_or_success_msg(facility_find(get_everything_after_command(command_str, command)), "");
+	else if(strcmp(command, "generate") == 0)
+		check_res_print_err_or_success_msg(facility_generate(get_everything_after_command(command_str, command)), "Password generated.\n");
+	else if(strcmp(command, "remove") == 0) {
+		char* read_str;
+		char* str = get_everything_after_command(command_str, command);
+
+		unsigned long id = strtoul(str, &read_str, 10);
+		if(id == 0 && (read_str-str) != strlen(str)) {
+			printf("Couldn't parse the password id.\n");
+			return PSEUDOSHELL_OK;
+		}
+
+		if(!present_yesno_prompt("Are you sure? Removed passwords cannot be restored.", true))
+			return PSEUDOSHELL_OK;
+
+		check_res_print_err_or_success_msg(facility_remove(id), "");
+	}
 	else
 		printf("Unknown command '%s'.\nUse 'help' to view the list of available commands.\n", command);
 
@@ -297,7 +347,7 @@ int enter_pseudoshell_loop() {
 		getstr(&command_str, PSEUDOSHELL_BUFFER_SIZE);
 
 		parse_command(command_str, &command, &argc, &argv);
-		ret = execute_command(command, argc, argv);
+		ret = execute_command(command_str, command, argc, argv);
 
 		if(ret == PSEUDOSHELL_CONTINUE)
 			continue;
