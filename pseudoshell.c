@@ -7,6 +7,7 @@
 #include "pseudoshell.h"
 
 #include "util.h"
+#include "facilities.h"
 
 int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
 	struct termios old, new;
@@ -180,13 +181,87 @@ void parse_command(char* str, char** command, int* argc, char*** argv) {
 	*argv = _argv;
 }
 
+void check_res_print_err_or_success_msg(int res, char* success_msg) {
+	if(res != FACILITIES_OK) {
+		char* err_str = get_facility_error_message(res);
+		if(err_str != NULL)
+			printf("%s\n", err_str);
+		else
+			printf("Unknown error occured.\n");
+	} else
+		fputs(success_msg, stdout);
+}
+
+int find_first_non_empty_argument_after_command(char* command, int argc, char** argv) {
+	if(argc <= 1)
+		return -1;
+	int first_non_empty_arg_after_cmd = -1;
+	for(int it = 1; it < argc; it++)
+		if(strlen(argv[it]) > 0) {
+			first_non_empty_arg_after_cmd = it;
+			break;
+		}
+	return first_non_empty_arg_after_cmd;
+}
+
+char* get_specific_success_message(char* start, char* specific, char* end) {
+	char* success_msg = NULL;
+	unsigned int success_msg_allocated_length = 0;
+	success_msg = strappendrealloc(success_msg, &success_msg_allocated_length, PSEUDOSHELL_BUFFER_SIZE, start);
+	success_msg = strappendrealloc(success_msg, &success_msg_allocated_length, PSEUDOSHELL_BUFFER_SIZE, specific);
+	success_msg = strappendrealloc(success_msg, &success_msg_allocated_length, PSEUDOSHELL_BUFFER_SIZE, end);
+	success_msg = strtrimrealloc(success_msg, &success_msg_allocated_length);
+	return success_msg;
+}
+
+void protest_command_requires_agument(char* command) {
+	printf("'%s' command requires an argument.\n", command);
+}
+
 int execute_command(char* command, int argc, char** argv) {
 	// TODO Command execution
 
 	// TODO Check unsaved changes on exit, return PSEUDOSHELL_CONTINUE if there are any
 
-	//if(strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
-	//	
+	int first_non_empty_argument_after_command;
+
+	if(strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
+		return facility_exit() == FACILITIES_OK ? PSEUDOSHELL_OK : PSEUDOSHELL_CONTINUE;
+	else if(strcmp(command, "init") == 0)
+		check_res_print_err_or_success_msg(facility_init(), "Store initiated.\n");
+	else if(strcmp(command, "set") == 0) {
+		first_non_empty_argument_after_command = find_first_non_empty_argument_after_command(command, argc, argv);
+		if(first_non_empty_argument_after_command < 0) {
+			protest_command_requires_agument(command);
+			return PSEUDOSHELL_OK;
+		}
+		
+		char* success_msg = get_specific_success_message("Set current field name to '", argv[first_non_empty_argument_after_command], "'.\n");
+		check_res_print_err_or_success_msg(facility_set(argv[first_non_empty_argument_after_command]), success_msg);
+		free(success_msg);
+	}
+	else if(strcmp(command, "to") == 0) {
+		first_non_empty_argument_after_command = find_first_non_empty_argument_after_command(command, argc, argv);
+		if(first_non_empty_argument_after_command < 0) {
+			protest_command_requires_agument(command);
+			return PSEUDOSHELL_OK;
+		}
+
+		char* success_msg = get_specific_success_message("Set field value to '", argv[first_non_empty_argument_after_command], "'.\n");
+		check_res_print_err_or_success_msg(facility_to(argv[first_non_empty_argument_after_command]), success_msg);
+		free(success_msg);
+	}
+	else if(strcmp(command, "get") == 0) {
+		first_non_empty_argument_after_command = find_first_non_empty_argument_after_command(command, argc, argv);
+		if(first_non_empty_argument_after_command < 0) {
+			protest_command_requires_agument(command);
+			return PSEUDOSHELL_OK;
+		}
+
+		check_res_print_err_or_success_msg(facility_get(argv[first_non_empty_argument_after_command]), "");
+	}
+	else
+		printf("Unknown command '%s'.\nUse 'help' to view the list of available commands.\n", command);
 
 	return PSEUDOSHELL_OK;
 }
