@@ -223,6 +223,14 @@ int execute_command(char* command, int argc, char** argv) {
 
 	if(strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
 		return facility_exit() == FACILITIES_OK ? PSEUDOSHELL_OK : PSEUDOSHELL_CONTINUE;
+	else if(strcmp(command, "store") == 0)
+		check_res_print_err_or_success_msg(facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION), "");
+	else if(strcmp(command, "password") == 0)
+		check_res_print_err_or_success_msg(facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION), "");
+	else if(strcmp(command, "memorize") == 0)
+		check_res_print_err_or_success_msg(facility_switch_mode(FACILITIES_MODE_MEMORIZATION), "");
+	else if(strcmp(command, "transfer") == 0)
+		check_res_print_err_or_success_msg(facility_switch_mode(FACILITIES_MODE_TRANSFER), "");
 	else if(strcmp(command, "init") == 0)
 		check_res_print_err_or_success_msg(facility_init(), "Store initialized.\n");
 	else if(strcmp(command, "set") == 0) {
