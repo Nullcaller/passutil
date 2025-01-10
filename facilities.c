@@ -612,6 +612,6 @@ int facility_remove(unsigned long id) {
 
 int facility_memorize(unsigned long id);
 
-int facility_transfer_send(int mode);
+int facility_send();
 
-int facility_transfer_receive(int mode);
+int facility_receive();
