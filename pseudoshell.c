@@ -35,6 +35,7 @@ int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
 		} else
 			_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
 	}
+	putchar('\n');
 
 	if(_str != NULL)
 		_str = strtrimrealloc(_str, &str_allocated_length);
