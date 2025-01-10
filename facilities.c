@@ -461,6 +461,8 @@ int facility_generate(char* identifier) {
 
 	generate_password_and_append(loaded_store, identifier, password_format, password_length);
 
+	FACILITIES_SET_STORE_DIRTY(true);
+
 	return FACILITIES_OK;
 }
 
