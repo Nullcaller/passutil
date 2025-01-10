@@ -84,6 +84,10 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	enter_pseudoshell_loop();
+
+	// TODO Deny any more arguments after "--interactive" for security reasons, add a `manual override` preprocessor define
+
 	facility_init();
 	facility_set("algorithm");
 	facility_to("AES256");
