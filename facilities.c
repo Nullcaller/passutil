@@ -401,6 +401,8 @@ int facility_lock() {
 
 	store_remove_key_and_dispose(loaded_store);
 
+	FACILITIES_SET_STORE_UNLOCKED(false);
+
 	return FACILITIES_OK;
 }
 
