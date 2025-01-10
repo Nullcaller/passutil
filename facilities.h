@@ -44,6 +44,10 @@ static unsigned long facilities_state = 0;
 #define FACILITIES_SET_STORE_INIT_COMPLETE(VALUE)	facilities_state = facilities_state - FACILITIES_STORE_INIT_COMPLETE + FACILITIES_FLAG_STORE_INIT_COMPLETE * VALUE
 #define FACILITIES_SET_STORE_UNLOCKED(VALUE)		facilities_state = facilities_state - FACILITIES_STORE_UNLOCKED + FACILITIES_FLAG_STORE_UNLOCKED * VALUE
 
+/*** UTIL ***/
+
+char* get_facility_error_message(int error);
+
 /*** FACILITIES ***/
 
 #define FACILITIES_OK 			0

@@ -19,6 +19,16 @@
 #include "storage.h"
 #include "generation.h"
 
+char* get_facility_error_message(int error) {
+	switch(error) {
+		case FACILITIES_OK:
+			return NULL;
+		default:
+			return NULL;
+		// TODO error messages
+	}
+}
+
 int facility_switch_mode(unsigned short new_mode) {
 	unsigned short allowed_mode_count = 4;
 	unsigned short allowed_modes[] = {
