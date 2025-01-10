@@ -603,7 +603,7 @@ int facility_remove(unsigned long id) {
 	Password* removed = store_remove_password(loaded_store, id);
 
 	if(removed == NULL)
-		return FACILTIIES_REMOVE_REMOVED_PASSWORD_IS_NULL;
+		return FACILITIES_REMOVE_REMOVED_PASSWORD_IS_NULL;
 
 	FACILITIES_SET_STORE_DIRTY(true);
 
