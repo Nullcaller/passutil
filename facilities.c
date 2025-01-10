@@ -114,18 +114,22 @@ int facility_to(char* field_value) {
 					FACILITIES_SET_STORE_DIRTY(true);
 				} else {
 					// TODO Change encyrption algorithm
+					return FACILITIES_TO_NOT_IMPLEMENTED;
 				}
 			} else if(strcmp(field_name, "key_verification_algorithm") == 0) {
 				if(!loaded_store->key_verifiable)
 					return FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE;
 
 				// TODO Change key verification algorithm
+				return FACILITIES_TO_NOT_IMPLEMENTED;
 			} else if(strcmp(field_name, "key_verification_algorithm_rounds") == 0) {
 				if(!loaded_store->key_verifiable)
 					return FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE;
 
 				// TODO Change key verification algorithm rounds amount
-			}
+				return FACILITIES_TO_NOT_IMPLEMENTED;
+			} else
+				return FACILITIES_TO_NOT_IMPLEMENTED;
 
 			break;
 		case FACILITIES_MODE_PASSWORD_MANIPULATION:
@@ -168,9 +172,12 @@ int facility_to(char* field_value) {
 				if(new_length == 0 && (read_str-field_value != strlen(field_value)))
 					return FACILITIES_TO_PASSWORD_MANIPULATION_INVALID_LENGTH;
 				password_length = new_length;
-			}
+			} else
+				return FACILITIES_TO_NOT_IMPLEMENTED;
 
 			break;
+		default:
+			return FACILITIES_TO_NOT_IMPLEMENTED;
 	}
 
 	return FACILITIES_OK;
