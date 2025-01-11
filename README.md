@@ -8,7 +8,7 @@ Memory leaks are practically **guaranteed** and the code is **spaghetti**.
 
 Data loss *is not guranateed*. However, **data loss *is* highly likely**.
 
-If you have doubts about whether or not secuirty is guaranteed, please take a read at section 4b of this project's license file:
+If you still have doubts about whether or not secuirty is guaranteed, please take a read at section 4b of this project's license file:
 
 ```
 4. Limitations and Disclaimers.
