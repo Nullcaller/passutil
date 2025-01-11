@@ -613,42 +613,47 @@ int facility_display(unsigned long start, unsigned long count) {
 	if(loaded_store->password_count-start <= count)
 		count = loaded_store->password_count-start;
 
-	printf("Displaying identifiers for passwords with ids %ld..%ld out of total %ld passwords:\n", start, start+count-1, loaded_store->password_count);
+	if(interactive) {
+		printf("Displaying identifiers for passwords with ids %ld..%ld out of total %ld passwords:\n", start, start+count-1, loaded_store->password_count);
 
-	char* format_str = NULL;
-	unsigned int format_str_allocated_length = 0;
+		char number_format_str[128];
+		number_format_str[0] = '%';
+		number_format_str[1] = '0';
+		char length_str[64];
+		char count_str[64];
+		sprintf(count_str, "%ld", loaded_store->password_count);
+		sprintf(length_str, "%ld", strlen(count_str));
+		sprintf(number_format_str+2, "%sld", length_str);
 
-	format_str = strappendrealloc(format_str, &format_str_allocated_length, FACILITIES_DISPLAY_BUFFER_SIZE, "%0");
-	char length_str[64];
-	char count_str[64];
-	sprintf(count_str, "%ld", loaded_store->password_count);
-	sprintf(length_str, "%ld", strlen(count_str));
-	format_str = strappendrealloc(format_str, &format_str_allocated_length, FACILITIES_DISPLAY_BUFFER_SIZE, length_str);
-	format_str = strappendrealloc(format_str, &format_str_allocated_length, FACILITIES_DISPLAY_BUFFER_SIZE, "ld  |  %s\n");
-	format_str = strtrimrealloc(format_str, &format_str_allocated_length);
+		int cnt = 0;
+		fputs("ID", stdout);
+		cnt += 2;
+		for(int it = strlen(count_str); it > 0; it--) {
+			putchar(' ');
+			cnt++;
+		}
+		fputs("|  IDENTIFIER\n", stdout);
+		cnt += 3;
+		int max = 10;
+		int cur;
+		for(unsigned long it = start; it < start+count; it++)
+			if((cur = strlen(loaded_store->passwords[it]->identifier)) > max)
+				max = cur;
+		cnt += max;
 
-	int cnt = 0;
-	fputs("ID", stdout);
-	cnt += 2;
-	for(int it = strlen(count_str); it > 0; it--) {
-		putchar(' ');
-		cnt++;
+		for(int it = 0; it < cnt; it++)
+			putchar('=');
+		putchar('\n');
+
+		for(unsigned long it = start; it < start+count; it++) {
+			printf(number_format_str, it);
+			fputs("  |  ", stdout);
+			fputs(loaded_store->passwords[it]->identifier, stdout);
+			putchar('\n');
+		}
+	} else {
+		// TODO Non-interactive
 	}
-	fputs("|  IDENTIFIER\n", stdout);
-	cnt += 3;
-	int max = 10;
-	int cur;
-	for(unsigned long it = start; it < start+count; it++)
-		if((cur = strlen(loaded_store->passwords[it]->identifier)) > max)
-			max = cur;
-	cnt += max;
-
-	for(int it = 0; it < cnt; it++)
-		putchar('=');
-	putchar('\n');
-
-	for(unsigned long it = start; it < start+count; it++)
-		printf(format_str, it, loaded_store->passwords[it]->identifier);
 	
 	return FACILITIES_OK;
 }

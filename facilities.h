@@ -6,7 +6,6 @@
 /*** CONSTANTS ***/
 
 #define FACILITIES_DISPLAY_DEFAULT_COUNT	20
-#define FACILITIES_DISPLAY_BUFFER_SIZE		4096
 
 static char* mode_short_names[] = {
 	"store",
