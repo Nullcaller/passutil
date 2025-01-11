@@ -373,6 +373,8 @@ int facility_unlock() {
 	free(shuffle_key);
 	free(shuffled_key);
 
+	// TODO Display passwords and ask if they are correct, redo if not
+
 	switch(insert_result) {
 		default:
 			return FACILITIES_UNLOCK_UNKNOWN_ERROR;
