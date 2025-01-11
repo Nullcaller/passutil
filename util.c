@@ -58,7 +58,7 @@ char* strappendcharrealloc(char* destination, unsigned int* destination_allocate
 		*current_destination_length = 0;
 	}
 
-	if((current_destination_length+2) > *destination_allocated_length) {
+	if((*current_destination_length+2) > *destination_allocated_length) {
 		unsigned int new_length = ((*current_destination_length+2)/piece_length+1)*piece_length;
 		destination = realloc(destination, sizeof(char)*new_length);
 		*destination_allocated_length = new_length;
