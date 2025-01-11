@@ -7,6 +7,8 @@
 
 #define FACILITIES_DISPLAY_DEFAULT_COUNT	20
 
+#define FACILITIES_PEEK_DEFAULT_COUNT		10
+
 static char* mode_short_names[] = {
 	"store",
 	"password",
@@ -138,6 +140,13 @@ int facility_close();
 #define FACILITIES_DISPLAY_START_OUT_OF_BOUNDS			53
 
 int facility_display(unsigned long start, unsigned long count);
+
+#define FACILITIES_PEEK_STORE_NOT_LOADED				54
+#define FACILITIES_PEEK_STORE_INIT_NOT_COMPLETE			55
+#define FACILITIES_PEEK_STORE_LOCKED					56
+#define FACILITIES_PEEK_START_OUT_OF_BOUNDS				57
+
+int facility_peek(unsigned long start, unsigned long count, bool present_yn_prompt, char* prompt, bool* prompt_result);
 
 #define FACILITIES_FETCH_STORE_NOT_LOADED			31
 #define FACILITIES_FETCH_STORE_INIT_NOT_COMPLETE	32

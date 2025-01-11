@@ -658,6 +658,117 @@ int facility_display(unsigned long start, unsigned long count) {
 	return FACILITIES_OK;
 }
 
+int facility_peek(unsigned long start, unsigned long count, bool present_yn_prompt, char* prompt, bool* prompt_result) {
+	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
+		return FACILITIES_WRONG_MODE;
+
+	if(!FACILITIES_STORE_LOADED)
+		return FACILITIES_PEEK_STORE_NOT_LOADED;
+
+	if(!FACILITIES_STORE_INIT_COMPLETE)
+		return FACILITIES_PEEK_STORE_INIT_NOT_COMPLETE;
+
+	if(!FACILITIES_STORE_UNLOCKED)
+		return FACILITIES_PEEK_STORE_LOCKED;
+	
+	if(loaded_store->password_count <= start)
+		return FACILITIES_PEEK_START_OUT_OF_BOUNDS;
+
+	if(count == 0)
+		count = FACILITIES_PEEK_DEFAULT_COUNT;
+
+	if(loaded_store->password_count-start <= count)
+		count = loaded_store->password_count-start;
+
+	if(interactive) {
+		if(!quiet)
+			printf("Displaying passwords with ids %ld..%ld out of total %ld passwords:\n", start, start+count-1, loaded_store->password_count);
+
+		char number_format_str[128];
+		number_format_str[0] = '%';
+		number_format_str[1] = '0';
+		char length_str[64];
+		char count_str[64];
+		sprintf(count_str, "%ld", loaded_store->password_count);
+		sprintf(length_str, "%ld", strlen(count_str));
+		sprintf(number_format_str+2, "%sld", length_str);
+
+		int cnt = 0;
+		fputs("ID", stdout);
+		cnt += 2;
+		for(int it = strlen(count_str); it > 0; it--) {
+			putchar(' ');
+			cnt++;
+		}
+		fputs("|  IDENTIFIER", stdout);
+		cnt += 3;
+		int max_i = 10;
+		int cur;
+		for(unsigned long it = start; it < start+count; it++)
+			if((cur = strlen(loaded_store->passwords[it]->identifier)) > max_i)
+				max_i = cur;
+		cnt += max_i;
+		for(int it = 10; max_i-it > 0; it++)
+			putchar(' ');
+		fputs("  |  PASSWORD", stdout);
+		putchar('\n');
+		cnt += 5;
+		int max_p = 8;
+		for(unsigned long it = start; it < start+count; it++)
+			if((cur = loaded_store->passwords[it]->length) > max_p)
+				max_p = cur;
+		cnt += max_p;
+
+
+		for(int it = 0; it < cnt; it++)
+			putchar('=');
+		putchar('\n');
+		cnt += 1;
+
+		char* plain_password;
+		for(unsigned long it = start; it < start+count; it++) {
+			printf(number_format_str, it);
+			fputs("  |  ", stdout);
+			fputs(loaded_store->passwords[it]->identifier, stdout);
+			cur = strlen(loaded_store->passwords[it]->identifier);
+			for(int it = max_i-cur; it > 0; it--)
+				putchar(' ');
+			plain_password = password_read_plain(loaded_store->passwords[it]);
+			fputs("  |  ", stdout);
+			fputs(plain_password, stdout);
+			cur = strlen(plain_password);
+			for(int it = max_p-cur; it > 0; it--)
+				putchar(' ');
+			putchar('\n');
+			free(plain_password);
+		}
+
+		if(!quiet)
+			printf("Press any key to continue.\n");
+		char passchar;
+		pseudoshell_getpasschar(&passchar, "", "", false);
+
+		if(!quiet) {
+			printf("\033[A\r");
+			printf("\33[2K");
+		}
+
+		for(unsigned long it = start; it < start+count+2; it++) {
+			printf("\033[A\r");
+			printf("\33[2K");
+		}
+
+		if(!quiet) {
+			printf("\033[A\r");
+			printf("\33[2K");
+		}
+	} else {
+		// TODO Non-interactive
+	}
+	
+	return FACILITIES_OK;
+}
+
 int facility_generate(char* identifier) {
 	if(mode != FACILITIES_MODE_PASSWORD_MANIPULATION)
 		return FACILITIES_WRONG_MODE;

@@ -335,6 +335,36 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 
 		check_res_print_err_or_success_msg(facility_display(start, count), "");
 	}
+	else if(strcmp(*commandp, "peek") == 0) {
+		remove_empty_arguments(argcp, argvp);
+
+		unsigned long start, count;
+
+		if(*argcp < 2) {
+			start = 0;
+			count = 0;
+		} else {
+			char* read_str;
+
+			start = strtoul((*argvp)[1], &read_str, 10);
+			if(start == 0 && (read_str-(*argvp)[1]) != strlen((*argvp)[1])) {
+				printf("Couldn't parse start id.\n");
+				return PSEUDOSHELL_OK;
+			}
+
+			if(*argcp == 2)
+				count = 0;
+			else {
+				count = strtoul((*argvp)[2], &read_str, 10);
+				if(count == 0 && (read_str-(*argvp)[2]) != strlen((*argvp)[2])) {
+					printf("Couldn't parse count.\n");
+					return PSEUDOSHELL_OK;
+				}
+			}
+		}
+
+		check_res_print_err_or_success_msg(facility_peek(start, count, false, NULL, NULL), "");
+	}
 	else if(strcmp(*commandp, "generate") == 0)
 		check_res_print_err_or_success_msg(facility_generate(get_everything_after_command(command_str, *commandp)), "Password generated.\n");
 	else if(strcmp(*commandp, "remove") == 0) {
