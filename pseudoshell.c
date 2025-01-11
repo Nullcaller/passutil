@@ -208,14 +208,23 @@ void remove_empty_arguments(int* argc, char*** argv) {
 	*argc = _argc;
 }
 
-void check_res_print_err_or_success_msg(int res, char* success_msg) {
-	if(res != FACILITIES_OK) {
-		char* err_str = get_facility_error_message(res);
-		if(err_str != NULL)
-			printf("%s\n", err_str);
-		else
-			printf("Unknown error occured (%d).\n", res);
-	} else
+void print_error_for_result(int result) {
+	char* error_string = get_facility_error_message(result);
+	if(error_string != NULL)
+		printf("%s\n", error_string);
+	else
+		printf("Unknown error occured (%d).\n", result);
+}
+
+void check_result_print_error(int result) {
+	if(result != FACILITIES_OK)
+		print_error_for_result(result);
+}
+
+void check_result_print_error_or_success_message(int result, char* success_msg) {
+	if(result != FACILITIES_OK)
+		print_error_for_result(result);
+	else
 		fputs(success_msg, stdout);
 }
 
@@ -244,15 +253,15 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 	if(strcmp(*commandp, "exit") == 0 || strcmp(*commandp, "quit") == 0)
 		return facility_exit() == FACILITIES_OK ? PSEUDOSHELL_OK : PSEUDOSHELL_CONTINUE;
 	else if(strcmp(*commandp, "store") == 0)
-		check_res_print_err_or_success_msg(facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION), "");
+		check_result_print_error(facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION));
 	else if(strcmp(*commandp, "password") == 0)
-		check_res_print_err_or_success_msg(facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION), "");
+		check_result_print_error(facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION));
 	else if(strcmp(*commandp, "memorize") == 0)
-		check_res_print_err_or_success_msg(facility_switch_mode(FACILITIES_MODE_MEMORIZATION), "");
+		check_result_print_error(facility_switch_mode(FACILITIES_MODE_MEMORIZATION));
 	else if(strcmp(*commandp, "transfer") == 0)
-		check_res_print_err_or_success_msg(facility_switch_mode(FACILITIES_MODE_TRANSFER), "");
+		check_result_print_error(facility_switch_mode(FACILITIES_MODE_TRANSFER));
 	else if(strcmp(*commandp, "init") == 0)
-		check_res_print_err_or_success_msg(facility_init(), "Store initialized.\n");
+		check_result_print_error(facility_init());
 	else if(strcmp(*commandp, "set") == 0) {
 		remove_empty_arguments(argcp, argvp);
 
@@ -262,12 +271,12 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 		}
 
 		int res = facility_set((*argvp)[1]);
-		check_res_print_err_or_success_msg(res, "");
+		check_result_print_error(res);
 
 		if(res != FACILITIES_OK)
 			return PSEUDOSHELL_OK;
 
-		check_res_print_err_or_success_msg(facility_to((*argvp)[2]), "");
+		check_result_print_error(facility_to((*argvp)[2]));
 	}
 	else if(strcmp(*commandp, "get") == 0) {
 		remove_empty_arguments(argcp, argvp);
@@ -277,20 +286,20 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 			return PSEUDOSHELL_OK;
 		}
 
-		check_res_print_err_or_success_msg(facility_get((*argvp)[1]), "");
+		check_result_print_error(facility_get((*argvp)[1]));
 	}
 	else if(strcmp(*commandp, "load") == 0)
-		check_res_print_err_or_success_msg(facility_load(get_everything_after_command(command_str, *commandp)), "Store loaded.\n");
+		check_result_print_error(facility_load(get_everything_after_command(command_str, *commandp)));
 	else if(strcmp(*commandp, "save") == 0)
-		check_res_print_err_or_success_msg(facility_save(), "Store saved.\n");
+		check_result_print_error(facility_save());
 	else if(strcmp(*commandp, "save-as") == 0)
-		check_res_print_err_or_success_msg(facility_save_as(get_everything_after_command(command_str, *commandp)), "Store saved.\n");
+		check_result_print_error(facility_save_as(get_everything_after_command(command_str, *commandp)));
 	else if(strcmp(*commandp, "unlock") == 0)
-		check_res_print_err_or_success_msg(facility_unlock(), "Store unlocked.\n");
+		check_result_print_error(facility_unlock());
 	else if(strcmp(*commandp, "lock") == 0)
-		check_res_print_err_or_success_msg(facility_lock(), "Store locked.\n");
+		check_result_print_error(facility_lock());
 	else if(strcmp(*commandp, "close") == 0)
-		check_res_print_err_or_success_msg(facility_close(), "Store closed.\n");
+		check_result_print_error(facility_close());
 	else if(strcmp(*commandp, "fetch") == 0) {
 		char* read_str;
 		char* str = get_everything_after_command(command_str, *commandp);
@@ -301,10 +310,10 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 			return PSEUDOSHELL_OK;
 		}
 
-		check_res_print_err_or_success_msg(facility_fetch(id), "");
+		check_result_print_error(facility_fetch(id));
 	}
 	else if(strcmp(*commandp, "find") == 0)
-		check_res_print_err_or_success_msg(facility_find(get_everything_after_command(command_str, *commandp)), "");
+		check_result_print_error(facility_find(get_everything_after_command(command_str, *commandp)));
 	else if(strcmp(*commandp, "display") == 0) {
 		remove_empty_arguments(argcp, argvp);
 
@@ -333,7 +342,7 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 			}
 		}
 
-		check_res_print_err_or_success_msg(facility_display(start, count), "");
+		check_result_print_error(facility_display(start, count));
 	}
 	else if(strcmp(*commandp, "peek") == 0) {
 		remove_empty_arguments(argcp, argvp);
@@ -363,10 +372,10 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 			}
 		}
 
-		check_res_print_err_or_success_msg(facility_peek(start, count, false, NULL, NULL), "");
+		check_result_print_error(facility_peek(start, count, false, NULL, NULL));
 	}
 	else if(strcmp(*commandp, "generate") == 0)
-		check_res_print_err_or_success_msg(facility_generate(get_everything_after_command(command_str, *commandp)), "Password generated.\n");
+		check_result_print_error(facility_generate(get_everything_after_command(command_str, *commandp)));
 	else if(strcmp(*commandp, "remove") == 0) {
 		char* read_str;
 		char* str = get_everything_after_command(command_str, *commandp);
@@ -380,7 +389,7 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 		if(!present_yesno_prompt("Are you sure? Removed passwords cannot be restored.", true))
 			return PSEUDOSHELL_OK;
 
-		check_res_print_err_or_success_msg(facility_remove(id), "");
+		check_result_print_error(facility_remove(id));
 	}
 	else
 		printf("Unknown command '%s'.\nUse 'help' to view the list of available commands.\n", *commandp);
