@@ -651,9 +651,9 @@ int facility_display(unsigned long start, unsigned long count) {
 			fputs(loaded_store->passwords[it]->identifier, stdout);
 			putchar('\n');
 		}
-	} else {
-		// TODO Non-interactive
-	}
+	} else
+		for(unsigned long it = start; it < start+count; it++)
+			printf("%ld\t%s\n", it, loaded_store->passwords[it]->identifier);
 	
 	return FACILITIES_OK;
 }
@@ -763,7 +763,12 @@ int facility_peek(unsigned long start, unsigned long count, bool present_yn_prom
 			printf("\33[2K");
 		}
 	} else {
-		// TODO Non-interactive
+		char* plain_password;
+		for(unsigned long it = start; it < start+count; it++) {
+			plain_password = password_read_plain(loaded_store->passwords[it]);
+			printf("%ld\t%s\t%s\n", it, loaded_store->passwords[it]->identifier, plain_password);
+			free(plain_password);
+		}
 	}
 	
 	return FACILITIES_OK;
