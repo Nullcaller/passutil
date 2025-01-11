@@ -256,26 +256,18 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 	else if(strcmp(*commandp, "set") == 0) {
 		remove_empty_arguments(argcp, argvp);
 
-		if((*argvp)[1] < 0) {
-			protest_command_requires_agument(*commandp);
-			return PSEUDOSHELL_OK;
-		}
-		
-		char* success_msg = get_specific_success_message("Set current field name to '", (*argvp)[1], "'.\n");
-		check_res_print_err_or_success_msg(facility_set((*argvp)[1]), success_msg);
-		free(success_msg);
-	}
-	else if(strcmp(*commandp, "to") == 0) {
-		remove_empty_arguments(argcp, argvp);
-
-		if(*argcp < 2) {
+		if(*argcp != 3) {
 			protest_command_requires_agument(*commandp);
 			return PSEUDOSHELL_OK;
 		}
 
-		char* success_msg = get_specific_success_message("Set field value to '", (*argvp)[1], "'.\n");
-		check_res_print_err_or_success_msg(facility_to((*argvp)[1]), success_msg);
-		free(success_msg);
+		int res = facility_set((*argvp)[1]);
+		check_res_print_err_or_success_msg(res, "");
+
+		if(res != FACILITIES_OK)
+			return PSEUDOSHELL_OK;
+
+		check_res_print_err_or_success_msg(facility_to((*argvp)[2]), "");
 	}
 	else if(strcmp(*commandp, "get") == 0) {
 		remove_empty_arguments(argcp, argvp);
