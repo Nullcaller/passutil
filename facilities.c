@@ -349,43 +349,70 @@ int facility_unlock() {
 	char* key = NULL;
 	int length = 0;
 
-	if(interactive)
-		length = pseudoshell_getpass(&key, "Enter key: ", PSEUDOSHELL_BUFFER_SIZE);
-	else
-		length = getstr(&key, PSEUDOSHELL_BUFFER_SIZE);
-
-	if(length <= 0) {
-		free(key);
-		return FACILITIES_UNLOCK_NO_KEY_PROVIDED;
-	}
-
-	char* shuffle_key_format = FORMAT_AZaz09_symb_sp;
-	for(unsigned short it = 0; it < strlen(key); it++)
-		if(strchr(shuffle_key_format, key[it]) == NULL)
-			return FACILITIES_UNLOCK_UNABLE_TO_GENERATE_SHUFFLE_KEY;
-	
+	char* shuffled_key;
 	char* shuffle_key;
-	generate_shuffle_key(&shuffle_key, shuffle_key_format);
-	char* shuffled_key = shuffle(key, shuffle_key, shuffle_key_format);
+	char* shuffle_key_format;
+	int result1, result2, result3, result4;
+	bool prompt_result;
 
-	int insert_result = store_copy_and_insert_key(loaded_store, shuffled_key, shuffle_key, shuffle_key_format);
+	while(true) {
+		if(interactive)
+			length = pseudoshell_getpass(&key, "Enter key: ", PSEUDOSHELL_BUFFER_SIZE);
+		else
+			length = getstr(&key, PSEUDOSHELL_BUFFER_SIZE);
 
-	free(shuffle_key);
-	free(shuffled_key);
+		if(length <= 0) {
+			free(key);
+			return FACILITIES_UNLOCK_NO_KEY_PROVIDED;
+		}
 
-	// TODO Display passwords and ask if they are correct, redo if not
+		shuffle_key_format = FORMAT_AZaz09_symb_sp;
+		for(unsigned short it = 0; it < strlen(key); it++)
+			if(strchr(shuffle_key_format, key[it]) == NULL)
+				return FACILITIES_UNLOCK_UNABLE_TO_GENERATE_SHUFFLE_KEY;
+		
+		shuffle_key;
+		generate_shuffle_key(&shuffle_key, shuffle_key_format);
+		shuffled_key = shuffle(key, shuffle_key, shuffle_key_format);
 
-	switch(insert_result) {
-		default:
-			return FACILITIES_UNLOCK_UNKNOWN_ERROR;
-		case STORE_KEY_OK:
-			FACILITIES_SET_STORE_UNLOCKED(true);
-			return FACILITIES_OK;
-		case STORE_KEY_EXISTS_NOT_REPLACING:
-			return FACILITIES_UNLOCK_KEY_EXISTS_NOT_REPLACING;
-		case STORE_KEY_VERIFICATION_FAILED:
-			return FACILITIES_UNLOCK_VERIFICATION_FAILED;
+		result1 = store_copy_and_insert_key(loaded_store, shuffled_key, shuffle_key, shuffle_key_format);
+
+		free(shuffle_key);
+		free(shuffled_key);
+
+		switch(result1) {
+			default:
+				return FACILITIES_UNLOCK_UNKNOWN_ERROR;
+			case STORE_KEY_OK:
+				FACILITIES_SET_STORE_UNLOCKED(true);
+				break;
+			case STORE_KEY_EXISTS_NOT_REPLACING:
+				return FACILITIES_UNLOCK_KEY_EXISTS_NOT_REPLACING;
+			case STORE_KEY_VERIFICATION_FAILED:
+				return FACILITIES_UNLOCK_VERIFICATION_FAILED;
+		}
+
+		if(!interactive || loaded_store->password_count == 0)
+			break;
+
+		if(loaded_store->key_verifiable) {
+			// TODO Key verification
+			break;
+		}
+		
+		result2 = facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION);
+		result3 = facility_peek(0, 0, true, "Are these passwords correct?", &prompt_result);
+		result4 = facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION);
+
+		if(prompt_result == true && result2 == FACILITIES_OK && result3 == FACILITIES_OK && result4 == FACILITIES_OK)
+			break;
+
+		store_remove_key_and_dispose(loaded_store);
+
+		FACILITIES_SET_STORE_UNLOCKED(false);
 	}
+
+	return FACILITIES_OK;
 }
 
 int facility_lock() {
@@ -743,10 +770,14 @@ int facility_peek(unsigned long start, unsigned long count, bool present_yn_prom
 			free(plain_password);
 		}
 
-		if(!quiet)
+		if(!quiet && !present_yn_prompt)
 			printf("Press any key to continue.\n");
-		char passchar;
-		pseudoshell_getpasschar(&passchar, "", "", false);
+		if(present_yn_prompt) {
+			*prompt_result = present_yesno_prompt(prompt, false);
+		} else {
+			char passchar;
+			pseudoshell_getpasschar(&passchar, "", "", false);
+		}
 
 		if(!quiet) {
 			printf("\033[A\r");
