@@ -92,6 +92,7 @@ QoL-wise:
 - [ ] Inject debug-related code so that tracking down bugs is less of a nightmare (use preprocessor, only compile debug functions if required)
 
 QoC-wise:
+- [ ] Put files serving separate purposes in separate folders (how name?)
 - [ ] Better number parsing in pseudoshell (implement in util, use in pseudoshell)
 - [ ] Some table-printing functions to reduce clutter in display, peek facilities? (something along the lines of `display.c`, `display.h` probably required)
 - [ ] Separate storage constructs better so facilities don't use `store->...`, `password->...` directly
