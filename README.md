@@ -80,6 +80,7 @@ Security-wise:
 
 QoL-wise:
 
+* Fix that annoying compiler warning about conversion from `char**` to `unsigned char**`
 * Command history so that up/down arrows actually work
 * Capture all VT100 escape sequences (https://web.archive.org/web/20121225024852/http://www.climagic.org/mirrors/VT100_Escape_Codes.html)
 * Write some actual error messages for facilities
