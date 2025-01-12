@@ -94,6 +94,62 @@ int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, boo
 	}
 }
 
+int pseudoshell_getcommand(char** str, char** vt100_esc, unsigned int piece_length) {
+	char* _str = NULL;
+	char* _vt100_esc = NULL;
+	unsigned int str_allocated_length = 0;
+	unsigned int str_length = 0;
+
+	if(pseudoshell_terminal_set() != 0)
+		return -1;
+
+	char character;
+	bool vt100_sequence = false;
+	unsigned int vt100_pos;
+	while((character = getchar()) != '\n' && character != EOF) {
+		_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
+		if(character == '\033') {
+			vt100_sequence = true;
+			vt100_pos = str_length - 1;
+			continue;
+		} else if(vt100_sequence) {
+			if(strchr(FORMAT_AZaz09, character) == NULL)
+				continue;
+
+			vt100_sequence = false;
+			if(_vt100_esc != NULL)
+				free(_vt100_esc);
+			_vt100_esc = strcpymalloc(_str+vt100_pos);
+
+			if(strcmp(_vt100_esc+1, "[A") == 0)
+				break;
+
+			if(strcmp(_vt100_esc+1, "[B") == 0)
+				break;
+
+			continue;
+		}
+		putchar(character);
+	}
+	if(character == '\n')
+		putchar('\n');
+
+	bool str_null = false;
+	if(_str != NULL)
+		_str = strtrimrealloc(_str, &str_allocated_length);
+	else {
+		_str = malloc(sizeof(char));
+		_str[0] = '\0';
+		str_null = true;
+	}
+
+	pseudoshell_terminal_reset();
+
+	*str = _str;
+	*vt100_esc = _vt100_esc;
+	return str_length+(1*str_null);
+}
+
 int getstr(char** str, unsigned int piece_length) {
 	char* _str = NULL;
 	unsigned int str_allocated_length = 0;
@@ -420,6 +476,7 @@ void free_and_reset_command_variables(char** command_str, char** command, int* a
 
 int enter_pseudoshell_loop() {
 	char* command_str = NULL;
+	char* vt100_esc = NULL;
 	char* command = NULL;
 	int argc = 0;
 	char** argv = NULL;
@@ -430,7 +487,24 @@ int enter_pseudoshell_loop() {
 		fputs(PSEUDOSHELL_LOOP_PROMPT_START, stdout);
 		fputs(mode_short_names[mode], stdout);
 		fputs(PSEUDOSHELL_LOOP_PROMPT_END, stdout);
-		getstr(&command_str, PSEUDOSHELL_BUFFER_SIZE);
+		pseudoshell_getcommand(&command_str, &vt100_esc, PSEUDOSHELL_BUFFER_SIZE);
+
+		if(strlen(command_str) == 0)
+			continue;
+
+
+		if(vt100_esc != NULL) {
+			printf("\33[2K\r");
+
+			if(strcmp(vt100_esc+1, "[A") == 0) {
+				// TODO Command history
+			} else if(strcmp(vt100_esc+1, "[B") == 0) {
+				// TODO Command history
+			}
+
+			free(vt100_esc);
+			continue;
+		}
 
 		parse_command(command_str, &command, &argc, &argv);
 		ret = execute_command(command_str, &command, &argc, &argv);

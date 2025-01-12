@@ -12,6 +12,8 @@ int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length);
 
 int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid);
 
+int pseudoshell_getcommand(char** str, char** vt100_esc, unsigned int piece_length);
+
 int getstr(char** str, unsigned int piece_length);
 
 int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid);
