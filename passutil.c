@@ -84,7 +84,12 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	enter_pseudoshell_loop();
+	if(interactive) {
+		int ret;
+		if((ret = enter_pseudoshell_loop()) == PSEUDOSHELL_OK)
+			return EXIT_CODE_SUCCESS;
+		return ret;
+	}
 
 	// TODO Deny any more arguments after "--interactive" for security reasons, add a `manual override` preprocessor define
 
