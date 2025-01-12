@@ -1,9 +1,12 @@
 #include<stdbool.h>
+#include<termios.h>
 
 #ifndef PSEUDOSHELL_H
 #define PSEUDOSHELL_H
 
 #define PSEUDOSHELL_BUFFER_SIZE 4096
+
+static struct termios pseudoshell_terminal_settings;
 
 int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length);
 

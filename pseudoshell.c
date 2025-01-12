@@ -9,17 +9,31 @@
 #include "util.h"
 #include "facilities.h"
 
-int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
-	struct termios old, new;
+int pseudoshell_terminal_set() {
+	struct termios new;
 
-	fputs(prompt, stdout);
-
-	if(tcgetattr(fileno(stdin), &old) != 0)
+	if(tcgetattr(fileno(stdin), &pseudoshell_terminal_settings) != 0)
 		return -1;
-	new = old;
+	new = pseudoshell_terminal_settings;
 	new.c_lflag &= ~(ICANON | ECHO);
 	if(tcsetattr(fileno(stdin), TCSAFLUSH, &new) != 0)
     	return -1;
+
+	return 0;
+}
+
+int pseudoshell_terminal_reset() {
+	if(tcsetattr(fileno(stdin), TCSAFLUSH, &pseudoshell_terminal_settings) != 0)
+		return -1;
+
+	return 0;
+}
+
+int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
+	fputs(prompt, stdout);
+
+	if(pseudoshell_terminal_set() != 0)
+		return -1;
 
 	char* _str = NULL;
 	unsigned int str_allocated_length = 0;
@@ -44,24 +58,19 @@ int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
 		_str[0] = '\0';
 	}
 
-	tcsetattr(fileno(stdin), TCSAFLUSH, &old);
+	pseudoshell_terminal_reset();
 
 	*pass = _str;
 	return str_length;
 }
 
 int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid) {
-	struct termios old, new;
 	char c;
 
 	fputs(prompt, stdout);
 
-	if(tcgetattr(fileno(stdin), &old) != 0)
+	if(!pseudoshell_terminal_set() != 0)
 		return -1;
-	new = old;
-	new.c_lflag &= ~(ICANON | ECHO);
-	if(tcsetattr(fileno(stdin), TCSAFLUSH, &new) != 0)
-    	return -1;
 
 	unsigned int valid_char_count = strlen(valid_chars);
 	bool valid_char = false;
@@ -75,7 +84,7 @@ int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, boo
 			break;
 	}
 
-	tcsetattr(fileno(stdin), TCSAFLUSH, &old);
+	pseudoshell_terminal_reset();
 
 	if(c == '\n' || c == EOF || c == '\r')
 		return 0;
@@ -94,17 +103,17 @@ int getstr(char** str, unsigned int piece_length) {
 	while((character = getchar()) != '\n' && character != '\r' && character != EOF)
 		_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
 
+	bool str_null = false;
 	if(_str != NULL)
 		_str = strtrimrealloc(_str, &str_allocated_length);
 	else {
 		_str = malloc(sizeof(char));
 		_str[0] = '\0';
-		*str = _str;
-		return 0;
+		str_null = true;
 	}
 
 	*str = _str;
-	return str_length+1;
+	return str_length+(1*str_null);
 }
 
 int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid) {
