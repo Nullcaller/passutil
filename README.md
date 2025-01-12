@@ -64,7 +64,7 @@ Feature-wise:
 - [ ] Implement transfer functions
 - [ ] Add transfer functions to facilities and pseudoshell
 - [ ] Add facility-related arguments and make them do somehting (https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html)
-- [ ] Windows??? Maybe??? I don't know??? (https://learn.microsoft.com/en-us/windows/console/getconsolemode)
+- [ ] Windows??? Maybe??? I don't know??? (https://learn.microsoft.com/en-us/windows/console/getconsolemode, https://learn.microsoft.com/en-us/windows/console/console-functions)
 
 Security-wise:
 
