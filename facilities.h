@@ -184,8 +184,92 @@ int facility_send();
 
 int facility_receive();
 
-#define FACILITIES_EXIT_DIRTY_DISACRD_DENIED		47
+#define FACILITIES_EXIT_DIRTY_DISCARD_DENIED		47
 
 int facility_exit();
+
+/*** ERROR MESSAGES ***/
+
+#define FACILITIES_WRONG_MODE_MESSAGE						"Wrong mode for selected facility"
+
+#define FACILITIES_SWITCH_MODE_UNKNOWN_MODE_MESSAGE			"switch_mode: Unknown mode"
+
+#define FACILITIES_SET_WRONG_FIELD_NAME_FOR_MODE_MESSAGE	"set: Wrong field name for selected mode"
+
+#define FACILITIES_GET_WRONG_FIELD_NAME_FOR_MODE_MESSAGE			"get: Wrong field name for selected mode"
+#define FACILITIES_GET_NOT_IMPLEMENTED_MESSAGE						"get: Getter not currently implemented (sorry)"
+#define FACILITIES_GET_STORE_MANIPULATION_STORE_NOT_LOADED_MESSAGE	"get: Store not loaded"
+
+#define FACILITIES_TO_STORE_MANIPULATION_STORE_NOT_LOADED_MESSAGE
+#define FACILITIES_TO_STORE_MANIPULATION_KEY_NOT_VERIFIABLE_MESSAGE
+#define FACILITIES_TO_STORE_MANIPULATION_ALGORITHM_UNSUPPORTED_MESSAGE
+#define FACILITIES_TO_PASSWORD_MANIPULATION_INVALID_LENGTH_MESSAGE
+#define FACILITIES_TO_PASSWORD_MANIPULATION_INVALID_FORMAT_MESSAGE
+#define	FACILITIES_TO_NOT_IMPLEMENTED_MESSAGE
+
+#define FACILITIES_INIT_STORE_ALREADY_LOADED_MESSAGE		"init: Store already loaded"
+
+#define FACILITIES_LOAD_STORE_ALREADY_LOADED_MESSAGE		"load: Store already loaded"
+#define FACILITIES_LOAD_FILE_ERROR_MESSAGE					"load: File I/O error"
+#define FACILITIES_LOAD_DESERIALIZE_ERROR_MESSAGE			"load: Deserialization error"
+
+#define FACILITIES_UNLOCK_STORE_NOT_LOADED_MESSAGE					"unlock: Store not loaded"
+#define FACILITIES_UNLOCK_STORE_INIT_NOT_COMPLETE_MESSAGE			"unlock: Store init not complete"
+#define FACILITIES_UNLOCK_UNABLE_TO_GENERATE_SHUFFLE_KEY_MESSAGE	"unlock: Unable to generate shuffle key"
+#define FACILITIES_UNLOCK_UNKNOWN_ERROR_MESSAGE						"unlock: Unknown error while inserting key"
+#define FACILITIES_UNLOCK_KEY_EXISTS_NOT_REPLACING_MESSAGE			"unlock: Error while unlocking the store - key already inserted"
+#define FACILITIES_UNLOCK_VERIFICATION_FAILED_MESSAGE				"unlock: Error while unlocking the store - verification failed"
+#define FACILITIES_UNLOCK_NO_KEY_PROVIDED_MESSAGE					"unlock: No key was provided"
+#define FACILITIES_UNLOCK_STORE_ALREADY_UNLOCKED_MESSAGE			"unlock: Store is already UNLOCKED"
+
+#define FACILITIES_LOCK_STORE_NOT_LOADED_MESSAGE					"lock: Store not loaded"
+#define FACILITIES_LOCK_STORE_INIT_NOT_COMPLETE_MESSAGE				"lock: Store init not complete"
+#define FACILITIES_LOCK_STORE_ALREADY_LOCKED_MESSAGE				"lock: Store is already LOCKED"
+
+#define FACILITIES_SAVE_STORE_INIT_NOT_COMPLETE_MESSAGE		"save: Store init not complete"
+#define FACILITIES_SAVE_NO_PATH_PROVIDED_MESSAGE			"save: No path was provided"
+#define FACILITIES_SAVE_NOTHING_TO_SAVE_MESSAGE				"save: Nothing to save (no changes)"
+#define FACILITIES_SAVE_STORE_NOT_LOADED_MESSAGE			"save: Store not loaded"
+#define FACILITIES_SAVE_FILE_ERROR_MESSAGE					"save: File I/O error"
+#define FACILITIES_SAVE_OVERWRITE_DENIED_MESSAGE			"save: Not overwriting (denied)"
+#define FACILITIES_SAVE_SERIALIZE_ERROR_MESSAGE				"save: Serialization error"
+
+#define FACILITIES_SAVE_AS_EMPTY_PATH_MESSAGE				"save-as: No path was provided"
+
+#define FACILITIES_CLOSE_STORE_NOT_LOADED_MESSAGE			"close: Store not loaded"
+#define FACILITIES_CLOSE_DIRTY_DISCARD_DENIED_MESSAGE		"close: Unsaved changes detected, discard denied"
+
+#define FACILITIES_DISPLAY_STORE_NOT_LOADED_MESSAGE					"display: Store not loaded"
+#define FACILITIES_DISPLAY_STORE_INIT_NOT_COMPLETE_MESSAGE			"display: Store init not complete"
+#define FACILITIES_DISPLAY_START_OUT_OF_BOUNDS_MESSAGE				"display: Selected start index is out of bounds"
+
+#define FACILITIES_PEEK_STORE_NOT_LOADED_MESSAGE			"peek: Store not loaded"
+#define FACILITIES_PEEK_STORE_INIT_NOT_COMPLETE_MESSAGE		"peek: Store init not complete"
+#define FACILITIES_PEEK_STORE_LOCKED_MESSAGE				"peek: Store is LOCKED"
+#define FACILITIES_PEEK_START_OUT_OF_BOUNDS_MESSAGE			"peek: Selected start index is out of bounds"
+
+#define FACILITIES_FETCH_STORE_NOT_LOADED_MESSAGE			"fetch: Store not loaded"
+#define FACILITIES_FETCH_STORE_INIT_NOT_COMPLETE_MESSAGE	"fetch: Store init not complete"
+#define FACILITIES_FETCH_STORE_LOCKED_MESSAGE				"fetch: Store is LOCKED"
+#define FACILITIES_FETCH_ID_OUT_OF_BOUNDS_MESSAGE			"fetch: Selected index is out of bounds"
+#define FACILITIES_FETCH_PASSWORD_ENTRY_IS_NULL_MESSAGE		"fetch: Fetch succeeded, but password object is NULL (this is bad)"
+#define FACILITIES_FETCH_PASSWORD_STRING_IS_NULL_MESSAGE	"fetch: Fetch succeeded, but password string is NULL (this is bad)"
+#define FACILITIES_FETCH_PRINT_FAILED_MESSAGE				"fetch: Failed to print password (this is weird)"
+
+#define FACILITIES_FIND_STORE_NOT_LOADED_MESSAGE			"find: Store not loaded"
+#define FACILITIES_FIND_STORE_INIT_NOT_COMPLETE_MESSAGE		"find: Store init not complete"
+#define FACILITIES_FIND_NO_PASSWORDS_FOUND_MESSAGE			"find: No passwords found"
+#define FACILITIES_FIND_EMPTY_IDENTIFIER_MESSAGE			"find: Find succeeded, but password identifier is NULL (this is weird)"
+
+#define FACILITIES_GENERATE_STORE_NOT_LOADED_MESSAGE				"generate: Store not loaded"
+#define FACILITIES_GENERATE_STORE_INIT_NOT_COMPLETE_MESSAGE			"generate: Store init not complete"
+#define FACILITIES_GENERATE_STORE_LOCKED_MESSAGE					"generate: Store is LOCKED"
+#define FACILITIES_GENERARE_EMPTY_IDENTIFIER_MESSAGE				"generate: No identifier provided"
+
+#define FACILITIES_REMOVE_STORE_NOT_LOADED_MESSAGE					"remove: Store not loaded"
+#define FACILITIES_REMOVE_STORE_INIT_NOT_COMPLETE_MESSAGE			"remove: Store init not complete"
+#define FACILITIES_REMOVE_REMOVED_PASSWORD_IS_NULL_MESSAGE			"remove: Remove succeeded, but removed password object is NULL (this is weird)"
+
+#define FACILITIES_EXIT_DIRTY_DISCARD_DENIED_MESSAGE		"exit: Unsaved changes detected, discard denied"
 
 #endif
