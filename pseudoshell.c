@@ -73,6 +73,9 @@ int _pseudoshell_handle_character_input(
 	if(getchar_result == EOF)
 		return eof_return_value;
 
+	if(getchar_result == 0x4) // Capture End-of-Transmission character (which for some reason my machine insists on doing instead of EOF WHYYYY)
+		return eof_return_value;
+
 	*characterp = getchar_result;
 	*characters_readp += 1;
 
