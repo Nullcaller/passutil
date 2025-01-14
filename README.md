@@ -2,7 +2,7 @@
 
 A simple **work in-progress** command-line utility to store and memorize passwords using libsodium and OpenSSL. Stores passwords in an AES256-encrypted form in a single blob. Metadata is stored separately in an unencrypted form.
 
-**SECURITY IS NOT GUARANTEED**
+**Security IS NOT guaranteed**
 
 Memory leaks are practically **guaranteed** and the code is **spaghetti**.
 
