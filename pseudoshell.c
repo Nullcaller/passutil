@@ -9,47 +9,166 @@
 #include "util.h"
 #include "facilities.h"
 
-int pseudoshell_terminal_set() {
+int _pseudoshell_terminal_set() {
+	if(_pseudoshell_is_terminal_set == true)
+		return _PSEUDOSEHLL_TERMINAL_SET_RESET_WRONG_STATE;
+
 	struct termios new;
 
-	if(tcgetattr(fileno(stdin), &pseudoshell_terminal_settings) != 0)
-		return -1;
-	new = pseudoshell_terminal_settings;
+	if(tcgetattr(fileno(stdin), &_pseudoshell_terminal_settings) != 0)
+		return _PSEUDOSHELL_TERMINAL_SET_RESET_FAILED;
+	new = _pseudoshell_terminal_settings;
 	new.c_lflag &= ~(ICANON | ECHO);
 	if(tcsetattr(fileno(stdin), TCSAFLUSH, &new) != 0)
-    	return -1;
+    	return _PSEUDOSHELL_TERMINAL_SET_RESET_FAILED;
 
-	return 0;
+	_pseudoshell_is_terminal_set = true;
+
+	return _PSEUDOSHELL_TERMINAL_SET_RESET_OK;
 }
 
-int pseudoshell_terminal_reset() {
-	if(tcsetattr(fileno(stdin), TCSAFLUSH, &pseudoshell_terminal_settings) != 0)
-		return -1;
+int _pseudoshell_terminal_reset() {
+	if(_pseudoshell_is_terminal_set == false)
+		return _PSEUDOSEHLL_TERMINAL_SET_RESET_WRONG_STATE;
 
-	return 0;
+	if(tcsetattr(fileno(stdin), TCSAFLUSH, &_pseudoshell_terminal_settings) != 0)
+		return _PSEUDOSHELL_TERMINAL_SET_RESET_FAILED;
+
+	_pseudoshell_is_terminal_set = false;
+
+	return _PSEUDOSHELL_TERMINAL_SET_RESET_OK;
 }
 
-int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
-	fputs(prompt, stdout);
+int _pseudoshell_handle_character_input(
+	/// Memory
+	unsigned int* characters_readp,
+	char** strp,
+	unsigned int* str_allocated_lengthp,
+	unsigned int* str_lengthp,
+	bool* vt100_sequence_indicatorp,
+	unsigned int* vt100_posp,
+	char** vt100_seqp,
+	char* characterp,
+	/// Settings
+	unsigned int piece_length,
+	bool echo,
+	bool handle_backspace,
+	bool handle_vt100_codes,
+	bool remove_vt100_codes_from_str,
+	char** terminating_vt100_codes,
+	unsigned int terminating_vt100_codes_length,
+	int eof_return_value,
+	bool is_whitelist, // Blacklist otherwise
+	char* character_list,
+	unsigned int character_list_length,
+	bool append_terminating_character,
+	bool echo_terminating_character
+) {
+	int getchar_result = getchar();
 
-	if(pseudoshell_terminal_set() != 0)
-		return -1;
+	if(getchar_result == EOF)
+		return eof_return_value;
 
+	*characterp = getchar_result;
+	*characters_readp += 1;
+
+	bool character_allowed = false;
+	for(unsigned int it = 0; it < character_list_length; it++)
+		if(*characterp == character_list[it]) {
+			character_allowed = true;
+			break;
+		}
+	if(!is_whitelist)
+		character_allowed = !character_allowed;
+
+	if(handle_backspace && (*characterp == 127 || *characterp == 8)) {
+		if(*str_lengthp > 0) {
+			*str_lengthp -= 1;
+			(*strp)[*str_lengthp] = '\0';
+			if(echo)
+				fputs("\b \b", stdout);
+		}
+		
+		return _PSEUDOSHELL_INPUT_LOOP_CONTINUE;
+	}
+	
+	if(character_allowed || append_terminating_character || (handle_vt100_codes && *vt100_sequence_indicatorp))
+		*strp = strappendcharrealloc(*strp, str_allocated_lengthp, str_lengthp, piece_length, *characterp);
+
+	if(handle_vt100_codes) {
+		if(*characterp == '\033') {
+			*vt100_sequence_indicatorp = true;
+			*vt100_posp = *str_lengthp - 1;
+			return _PSEUDOSHELL_INPUT_LOOP_CONTINUE;
+		}
+		
+		if(*vt100_sequence_indicatorp) {
+			if(strchr(FORMAT_AZaz09, *characterp) == NULL)
+				return _PSEUDOSHELL_INPUT_LOOP_CONTINUE;
+
+			*vt100_sequence_indicatorp = false;
+			if(*vt100_seqp != NULL)
+				free(*vt100_seqp);
+			*vt100_seqp = strcpymalloc(*strp+*vt100_posp);
+				
+			if(remove_vt100_codes_from_str) {
+				*str_lengthp -= strlen(*vt100_seqp);
+				(*strp)[*str_lengthp] = '\0';
+			}
+
+			if(terminating_vt100_codes_length > 0)
+				for(unsigned int it = 0; it < terminating_vt100_codes_length; it++)
+					if(strcmp(*vt100_seqp+1, terminating_vt100_codes[it]) == 0)
+						return _PSEUDOSHELL_INPUT_LOOP_EXIT;
+
+			return _PSEUDOSHELL_INPUT_LOOP_CONTINUE;
+		}
+	}
+
+	if(echo || (!character_allowed && echo_terminating_character))
+		putchar(*characterp);
+	
+	return character_allowed ? _PSEUDOSHELL_INPUT_LOOP_CONTINUE : _PSEUDOSHELL_INPUT_LOOP_EXIT;
+}
+
+int pseudoshell_get_string(char** str, unsigned int piece_length) {
+	unsigned int characters_read = 0;
 	char* _str = NULL;
+	char* _vt100_esc = NULL;
 	unsigned int str_allocated_length = 0;
 	unsigned int str_length = 0;
-
 	char character;
-	while((character = getchar()) != '\n' && character != '\r' && character != EOF) {
-		if(character == 127 || character == 8) {
-			if(str_length != 0) {
-				str_length--;
-				_str[str_length] = '\0';
-			}
-		} else
-			_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
-	}
-	putchar('\n');
+	bool vt100_sequence = false;
+	unsigned int vt100_pos;
+
+	if(_pseudoshell_terminal_set() != 0)
+		return -1;
+
+	while(true)
+		if(_pseudoshell_handle_character_input(
+			&characters_read,		// characters_readp
+			&_str,					// strp
+			&str_allocated_length,	// str_allocated_lengthp
+			&str_length,			// str_lengthp
+			&vt100_sequence,		// vt100_sequence_indicatorp
+			&vt100_pos,				// vt100_posp
+			&_vt100_esc,			// vt100_seqp
+			&character,				// characterp
+			piece_length,			// piece_length
+			true,	// echo
+			true,	// handle_backspace
+			true,	// handle_vt100_codes
+			true,	// remove_vt100_codes_from_str
+			NULL,	// terminating_vt100_codes
+			0,		// terminating_vt100_codes_length
+			_PSEUDOSHELL_INPUT_LOOP_EXIT,		// eof_return_value
+			false,	// is_whitelist
+			_pseudoshell_newline,				// character_list
+			_pseudoshell_newline_length,		// character_list_length
+			false,	// append_terminating_character
+			true	// echo_terminating_character
+		) == _PSEUDOSHELL_INPUT_LOOP_EXIT)
+			break;
 
 	if(_str != NULL)
 		_str = strtrimrealloc(_str, &str_allocated_length);
@@ -58,23 +177,87 @@ int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length) {
 		_str[0] = '\0';
 	}
 
-	pseudoshell_terminal_reset();
+	_pseudoshell_terminal_reset();
+
+	*str = _str;
+	return characters_read;
+}
+
+int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_length) {
+	unsigned int characters_read = 0;
+	char* _str = NULL;
+	char* _vt100_esc = NULL;
+	unsigned int str_allocated_length = 0;
+	unsigned int str_length = 0;
+	char character;
+	bool vt100_sequence = false;
+	unsigned int vt100_pos;
+
+	fputs(prompt, stdout);
+
+	if(_pseudoshell_terminal_set() != 0)
+		return -1;
+
+	while(true)
+		if(_pseudoshell_handle_character_input(
+			&characters_read,		// characters_readp
+			&_str,					// strp
+			&str_allocated_length,	// str_allocated_lengthp
+			&str_length,			// str_lengthp
+			&vt100_sequence,		// vt100_sequence_indicatorp
+			&vt100_pos,				// vt100_posp
+			&_vt100_esc,			// vt100_seqp
+			&character,				// characterp
+			piece_length,			// piece_length
+			false,	// echo
+			true,	// handle_backspace
+			true,	// handle_vt100_codes
+			true,	// remove_vt100_codes_from_str
+			NULL,	// terminating_vt100_codes
+			0,		// terminating_vt100_codes_length
+			_PSEUDOSHELL_INPUT_LOOP_EXIT,		// eof_return_value
+			false,	// is_whitelist
+			_pseudoshell_newline,				// character_list
+			_pseudoshell_newline_length,		// character_list_length
+			false,	// append_terminating_character
+			true	// echo_terminating_character
+		) == _PSEUDOSHELL_INPUT_LOOP_EXIT)
+			break;
+
+	if(_str != NULL)
+		_str = strtrimrealloc(_str, &str_allocated_length);
+	else {
+		_str = malloc(sizeof(char));
+		_str[0] = '\0';
+	}
+
+	_pseudoshell_terminal_reset();
 
 	*pass = _str;
 	return str_length;
 }
 
-int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid) {
-	char c;
-
+int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid) {
 	fputs(prompt, stdout);
 
-	if(pseudoshell_terminal_set() != 0)
+	if(_pseudoshell_terminal_set() != 0)
 		return -1;
 
 	unsigned int valid_char_count = strlen(valid_chars);
 	bool valid_char = false;
+	bool vt100_seq = false;
+	char c;
 	while((c = getchar()) != EOF) {
+		if(c == '\033') {
+			vt100_seq = true;
+			continue;
+		}
+		if(vt100_seq) {
+			if(strchr(FORMAT_AZaz09, c) != NULL)
+				vt100_seq = false;
+			continue;
+		}
+
 		for(unsigned int it = 0; it < valid_char_count; it++)
 			if(c == valid_chars[it]) {
 				valid_char = true;
@@ -84,7 +267,7 @@ int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, boo
 			break;
 	}
 
-	pseudoshell_terminal_reset();
+	_pseudoshell_terminal_reset();
 
 	if(c == '\n' || c == EOF || c == '\r')
 		return 0;
@@ -94,58 +277,56 @@ int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, boo
 	}
 }
 
-int pseudoshell_getcommand(char** str, char** vt100_esc, unsigned int piece_length) {
+unsigned int _pseudoshell_get_command(char** str, char** vt100_esc, int* terminal_set_resultp, int* terminal_reset_resultp, bool* eof_encounteredp, unsigned int piece_length) {
+	*eof_encounteredp = false;
+	
+	unsigned int characters_read = 0;
 	char* _str = NULL;
 	char* _vt100_esc = NULL;
 	unsigned int str_allocated_length = 0;
 	unsigned int str_length = 0;
-
-	if(pseudoshell_terminal_set() != 0)
-		return -1;
-
 	char character;
 	bool vt100_sequence = false;
 	unsigned int vt100_pos;
-	while((character = getchar()) != '\n' && character != EOF) {
-		if(character == 127 || character == 8) {
-			if(str_length != 0) {
-				str_length--;
-				_str[str_length] = '\0';
-				fputs("\b \b", stdout);
-				continue;
-			}
-		} else
-			_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
 
-		if(character == '\033') {
-			vt100_sequence = true;
-			vt100_pos = str_length - 1;
-			continue;
-		} else if(vt100_sequence) {
-			if(strchr(FORMAT_AZaz09, character) == NULL)
-				continue;
+	*terminal_set_resultp = _pseudoshell_terminal_set();
+	if(*terminal_set_resultp != _PSEUDOSHELL_TERMINAL_SET_RESET_OK)
+		return 0;
 
-			vt100_sequence = false;
-			if(_vt100_esc != NULL)
-				free(_vt100_esc);
-			_vt100_esc = strcpymalloc(_str+vt100_pos);
-			str_length -= strlen(_vt100_esc);
-			_str[str_length] = '\0';
-			printf("%s\n", _str);
+	int character_handle_result;
+	while(true) {
+		character_handle_result = _pseudoshell_handle_character_input(
+			&characters_read,		// characters_readp
+			&_str,					// strp
+			&str_allocated_length,	// str_allocated_lengthp
+			&str_length,			// str_lengthp
+			&vt100_sequence,		// vt100_sequence_indicatorp
+			&vt100_pos,				// vt100_posp
+			&_vt100_esc,			// vt100_seqp
+			&character,				// characterp
+			piece_length,			// piece_length
+			true,	// echo
+			true,	// handle_backspace
+			true,	// handle_vt100_codes
+			true,	// remove_vt100_codes_from_str
+			_pseudoshell_up_down_arrows,		// terminating_vt100_codes
+			_pseudoshell_up_down_arrows_length,	// terminating_vt100_codes_length
+			_PSEUDOSHELL_INPUT_LOOP_EOF,		// eof_return_value
+			false,	// is_whitelist
+			_pseudoshell_newline,				// character_list
+			_pseudoshell_newline_length,		// character_list_length
+			false,	// append_terminating_character
+			true	// echo_terminating_character
+		);
 
-			if(strcmp(_vt100_esc+1, "[A") == 0)
-				break;
+		if(character_handle_result == _PSEUDOSHELL_INPUT_LOOP_EXIT)
+			break;
 
-			if(strcmp(_vt100_esc+1, "[B") == 0)
-				break;
-
-			continue;
+		if(character_handle_result == _PSEUDOSHELL_INPUT_LOOP_EOF) {
+			*eof_encounteredp = true;
+			break;
 		}
-		
-		putchar(character);
 	}
-	if(character == '\n')
-		putchar('\n');
 
 	bool str_null = false;
 	if(_str != NULL)
@@ -156,33 +337,12 @@ int pseudoshell_getcommand(char** str, char** vt100_esc, unsigned int piece_leng
 		str_null = true;
 	}
 
-	pseudoshell_terminal_reset();
+	*terminal_reset_resultp = _pseudoshell_terminal_reset();
 
 	*str = _str;
 	*vt100_esc = _vt100_esc;
-	return str_length+(1*str_null);
-}
 
-int getstr(char** str, unsigned int piece_length) {
-	char* _str = NULL;
-	unsigned int str_allocated_length = 0;
-	unsigned int str_length = 0;
-
-	char character;
-	while((character = getchar()) != '\n' && character != '\r' && character != EOF)
-		_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
-
-	bool str_null = false;
-	if(_str != NULL)
-		_str = strtrimrealloc(_str, &str_allocated_length);
-	else {
-		_str = malloc(sizeof(char));
-		_str[0] = '\0';
-		str_null = true;
-	}
-
-	*str = _str;
-	return str_length+(1*str_null);
+	return characters_read;
 }
 
 int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid) {
@@ -205,7 +365,7 @@ int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_vali
 
 		printf(") ");
 
-		if(getstr(&str, PSEUDOSHELL_BUFFER_SIZE) <= 0)
+		if(pseudoshell_get_string(&str, PSEUDOSHELL_BUFFER_SIZE) <= 0)
 			return -1;
 			
 		for(unsigned int it = 0; it < options_length; it++)
@@ -221,6 +381,28 @@ int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_vali
 
 bool present_yesno_prompt(char* prompt, bool repeat_until_valid) {
 	return present_prompt(prompt, "yn", repeat_until_valid) == 0 ? true : false;
+}
+
+int _pseudoshell_handle_command_input(char** str, char** vt100_esc, unsigned int piece_length) {
+	unsigned int characters_read;
+	int terminal_set_result;
+	int terminal_reset_result;
+	bool eof_encountered;
+
+	characters_read = _pseudoshell_get_command(str, vt100_esc, &terminal_set_result, &terminal_reset_result, &eof_encountered, piece_length);
+
+	if(eof_encountered)
+		return _PSEUDOSHELL_HANDLE_COMMAND_INPUT_EOF;
+
+	if(terminal_set_result != _PSEUDOSHELL_TERMINAL_SET_RESET_OK) {
+		printf("%s\n", _PSEUDOSHELL_HANDLE_COMMAND_INPUT_TERMINAL_SET_FAIL_MESSAGE);
+		return _PSEUDOSHELL_HANDLE_COMMAND_INPUT_TERMINAL_SET_FAIL;
+	}
+
+	if(terminal_reset_result != _PSEUDOSHELL_TERMINAL_SET_RESET_OK)
+		printf("%s\n", _PSEUDOSHELL_HANDLE_COMMAND_INPUT_TERMINAL_RESET_FAIL_MESSAGE);
+
+	return characters_read;
 }
 
 void parse_command(char* str, char** command, int* argc, char*** argv) {
@@ -500,11 +682,11 @@ int enter_pseudoshell_loop() {
 		fputs(PSEUDOSHELL_LOOP_PROMPT_START, stdout);
 		fputs(mode_short_names[mode], stdout);
 		fputs(PSEUDOSHELL_LOOP_PROMPT_END, stdout);
-		pseudoshell_getcommand(&command_str, &vt100_esc, PSEUDOSHELL_BUFFER_SIZE);
+		if(_pseudoshell_handle_command_input(&command_str, &vt100_esc, PSEUDOSHELL_BUFFER_SIZE) < 0)
+			break;
 
-		if(strlen(command_str) == 0)
+		if(strlen(command_str) == 0 && vt100_esc == NULL)
 			continue;
-
 
 		if(vt100_esc != NULL) {
 			printf("\33[2K\r");

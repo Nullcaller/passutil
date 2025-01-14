@@ -12,7 +12,7 @@
 
 int memorize_direct(char* shuffled_password, char* shuffle_key, char* shuffle_key_format) {
 	char* entered_password = NULL; 
-	if(pseudoshell_getpass(&entered_password, MEMORIZER_DIRECT_PROMPT, PSEUDOSHELL_BUFFER_SIZE) <= 0)
+	if(pseudoshell_get_password(&entered_password, MEMORIZER_DIRECT_PROMPT, PSEUDOSHELL_BUFFER_SIZE) <= 0)
 		return MEMORIZER_ERROR;
 
 	if(entered_password == NULL)
@@ -65,7 +65,7 @@ int memorize_nth_symbol(char* shuffled_password, char* shuffle_key, char* shuffl
 
 	char* selection_string = malloc(sizeof(char)*2);
 	selection_string[1] = '\0';
-	if(pseudoshell_getpasschar(selection_string, MEMORIZER_CHOICE_PROMPT, FORMAT_AZaz09, true) <= 0) {
+	if(pseudoshell_get_sepcific_hidden_character(selection_string, MEMORIZER_CHOICE_PROMPT, FORMAT_AZaz09, true) <= 0) {
 		free(selection_string);
 		return MEMORIZER_ERROR;
 	}

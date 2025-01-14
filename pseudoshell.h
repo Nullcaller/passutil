@@ -4,21 +4,59 @@
 #ifndef PSEUDOSHELL_H
 #define PSEUDOSHELL_H
 
+/*** CONSTANTS ***/
+
 #define PSEUDOSHELL_BUFFER_SIZE 4096
 
-static struct termios pseudoshell_terminal_settings;
+static char* _pseudoshell_up_down_arrows[] = {
+	"[A",
+	"[B"
+};
+static unsigned int _pseudoshell_up_down_arrows_length = 2;
 
-int pseudoshell_getpass(char** pass, char* prompt, unsigned int piece_length);
+static char* _pseudoshell_newline = "\n";
+static unsigned int _pseudoshell_newline_length = 1;
 
-int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid);
+/*** STATE DESCRIPTION ***/
 
-int pseudoshell_getcommand(char** str, char** vt100_esc, unsigned int piece_length);
+// Terminal management
+static bool _pseudoshell_is_terminal_set = false;
 
-int getstr(char** str, unsigned int piece_length);
+static struct termios _pseudoshell_terminal_settings;
+
+/*** TERMINAL MANAGEMENT FUNCTIONS ***/
+
+#define _PSEUDOSHELL_TERMINAL_SET_RESET_OK 0
+#define _PSEUDOSHELL_TERMINAL_SET_RESET_FAILED -1
+#define _PSEUDOSEHLL_TERMINAL_SET_RESET_WRONG_STATE -2
+
+/*** INPUT FUNCTIONS ***/
+
+#define _PSEUDOSHELL_INPUT_LOOP_CONTINUE 0
+#define _PSEUDOSHELL_INPUT_LOOP_EXIT 1
+#define _PSEUDOSHELL_INPUT_LOOP_EOF 2
+
+int pseudoshell_get_string(char** str, unsigned int piece_length);
+
+int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_length);
+
+int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid);
+
+/*** PROMPTING (NOT THE LLM KIND) FUNCTIONS ***/
 
 int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid);
 
 bool present_yesno_prompt(char* prompt, bool repeat_until_valid);
+
+/*** COMMAND-RELATED FUNCTIONS ***/
+
+#define _PSEUDOSHELL_HANDLE_COMMAND_INPUT_TERMINAL_SET_FAIL		-2
+#define _PSEUDOSHELL_HANDLE_COMMAND_INPUT_EOF					-1
+
+#define _PSEUDOSHELL_HANDLE_COMMAND_INPUT_TERMINAL_SET_FAIL_MESSAGE "ERROR: Couldn't set terminal state"
+#define _PSEUDOSHELL_HANDLE_COMMAND_INPUT_TERMINAL_RESET_FAIL_MESSAGE "WARNING: Couldn't reset terminal state"
+
+int _pseudoshell_handle_command_input(char** str, char** vt100_esc, unsigned int piece_length);
 
 void parse_command(char* str, char** command, int* argc, char*** argv);
 
