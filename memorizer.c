@@ -11,12 +11,15 @@
 // TODO getpass implementation with ^C termination and exit
 
 int memorize_direct(char* shuffled_password, char* shuffle_key, char* shuffle_key_format) {
-	char* entered_password = NULL; 
-	if(pseudoshell_get_password(&entered_password, MEMORIZER_DIRECT_PROMPT, PSEUDOSHELL_BUFFER_SIZE, false) <= 0)
+	char* entered_password = NULL;
+	int password_get_result = pseudoshell_get_password(&entered_password, MEMORIZER_DIRECT_PROMPT, PSEUDOSHELL_BUFFER_SIZE, false); 
+	putc('\n', stdout);
+
+	if(password_get_result < 0)
 		return MEMORIZER_ERROR;
 
 	if(entered_password == NULL)
-		return MEMORIZER_FAILURE;
+		return MEMORIZER_ERROR;
 
 	char* shuffled_entered_passdword = shuffle(entered_password, shuffle_key, shuffle_key_format);
 
@@ -65,7 +68,7 @@ int memorize_nth_symbol(char* shuffled_password, char* shuffle_key, char* shuffl
 
 	char* selection_string = malloc(sizeof(char)*2);
 	selection_string[1] = '\0';
-	if(pseudoshell_get_sepcific_hidden_character(selection_string, MEMORIZER_CHOICE_PROMPT, FORMAT_AZaz09, true, false) <= 0) {
+	if(pseudoshell_get_sepcific_hidden_character(selection_string, MEMORIZER_CHOICE_PROMPT, possible_characters, true, false) <= 0) {
 		free(selection_string);
 		return MEMORIZER_ERROR;
 	}
