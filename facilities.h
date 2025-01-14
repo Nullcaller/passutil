@@ -1,5 +1,7 @@
 #include "constants-formats.h"
 
+#include "storage.h"
+
 #ifndef FACILITIES_H
 #define FACILITIES_H
 
