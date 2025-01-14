@@ -14,8 +14,10 @@ static char* _pseudoshell_up_down_arrows[] = {
 };
 static unsigned int _pseudoshell_up_down_arrows_length = 2;
 
-static char* _pseudoshell_newline = "\n";
-static unsigned int _pseudoshell_newline_length = 1;
+static char _pseudoshell_standard_terminators[] = {
+	'\n'
+};
+static unsigned int _pseudoshell_standard_terminators_length = 1;
 
 /*** STATE DESCRIPTION ***/
 

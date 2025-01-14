@@ -167,8 +167,8 @@ int pseudoshell_get_string(char** str, unsigned int piece_length) {
 			0,		// terminating_vt100_codes_length
 			_PSEUDOSHELL_INPUT_LOOP_EXIT,		// eof_return_value
 			false,	// is_whitelist
-			_pseudoshell_newline,				// character_list
-			_pseudoshell_newline_length,		// character_list_length
+			_pseudoshell_standard_terminators,				// character_list
+			_pseudoshell_standard_terminators_length,		// character_list_length
 			false,	// append_terminating_character
 			true	// echo_terminating_character
 		) == _PSEUDOSHELL_INPUT_LOOP_EXIT)
@@ -222,8 +222,8 @@ int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_lengt
 			0,		// terminating_vt100_codes_length
 			_PSEUDOSHELL_INPUT_LOOP_EOF,		// eof_return_value
 			false,	// is_whitelist
-			_pseudoshell_newline,				// character_list
-			_pseudoshell_newline_length,		// character_list_length
+			_pseudoshell_standard_terminators,				// character_list
+			_pseudoshell_standard_terminators_length,		// character_list_length
 			false,	// append_terminating_character
 			true	// echo_terminating_character
 		) != _PSEUDOSHELL_INPUT_LOOP_CONTINUE))
@@ -330,8 +330,8 @@ unsigned int _pseudoshell_get_command(char** str, char** vt100_esc, int* termina
 			_pseudoshell_up_down_arrows_length,	// terminating_vt100_codes_length
 			_PSEUDOSHELL_INPUT_LOOP_EOF,		// eof_return_value
 			false,	// is_whitelist
-			_pseudoshell_newline,				// character_list
-			_pseudoshell_newline_length,		// character_list_length
+			_pseudoshell_standard_terminators,				// character_list
+			_pseudoshell_standard_terminators_length,		// character_list_length
 			false,	// append_terminating_character
 			true	// echo_terminating_character
 		);
