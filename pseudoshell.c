@@ -107,7 +107,16 @@ int pseudoshell_getcommand(char** str, char** vt100_esc, unsigned int piece_leng
 	bool vt100_sequence = false;
 	unsigned int vt100_pos;
 	while((character = getchar()) != '\n' && character != EOF) {
-		_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
+		if(character == 127 || character == 8) {
+			if(str_length != 0) {
+				str_length--;
+				_str[str_length] = '\0';
+				fputs("\b \b", stdout);
+				continue;
+			}
+		} else
+			_str = strappendcharrealloc(_str, &str_allocated_length, &str_length, piece_length, character);
+
 		if(character == '\033') {
 			vt100_sequence = true;
 			vt100_pos = str_length - 1;
@@ -129,6 +138,7 @@ int pseudoshell_getcommand(char** str, char** vt100_esc, unsigned int piece_leng
 
 			continue;
 		}
+		
 		putchar(character);
 	}
 	if(character == '\n')
