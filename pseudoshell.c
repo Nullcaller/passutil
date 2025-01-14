@@ -69,7 +69,7 @@ int pseudoshell_getpasschar(char* passchar, char* prompt, char* valid_chars, boo
 
 	fputs(prompt, stdout);
 
-	if(!pseudoshell_terminal_set() != 0)
+	if(pseudoshell_terminal_set() != 0)
 		return -1;
 
 	unsigned int valid_char_count = strlen(valid_chars);
