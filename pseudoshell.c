@@ -9,6 +9,8 @@
 #include "util.h"
 #include "facilities.h"
 
+/*** TERMINAL MANAGEMENT FUNCTIONS ***/
+
 int _pseudoshell_terminal_set() {
 	if(_pseudoshell_is_terminal_set == true)
 		return _PSEUDOSEHLL_TERMINAL_SET_RESET_WRONG_STATE;
@@ -38,6 +40,8 @@ int _pseudoshell_terminal_reset() {
 
 	return _PSEUDOSHELL_TERMINAL_SET_RESET_OK;
 }
+
+/*** INPUT FUNCTIONS ***/
 
 int _pseudoshell_handle_character_input(
 	/// Memory
@@ -345,7 +349,9 @@ unsigned int _pseudoshell_get_command(char** str, char** vt100_esc, int* termina
 	return characters_read;
 }
 
-int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid) {
+/*** PROMPTING (NOT THE LLM KIND) FUNCTIONS ***/
+
+int pseudoshell_present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid) {
 	char* str;
 	int res = -2;
 
@@ -379,9 +385,11 @@ int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_vali
 	return res;
 }
 
-bool present_yesno_prompt(char* prompt, bool repeat_until_valid) {
-	return present_prompt(prompt, "yn", repeat_until_valid) == 0 ? true : false;
+bool pseudoshell_present_yesno_prompt(char* prompt, bool repeat_until_valid) {
+	return pseudoshell_present_prompt(prompt, "yn", repeat_until_valid) == 0 ? true : false;
 }
+
+/*** COMMAND-RELATED FUNCTIONS ***/
 
 int _pseudoshell_handle_command_input(char** str, char** vt100_esc, unsigned int piece_length) {
 	unsigned int characters_read;
@@ -405,7 +413,7 @@ int _pseudoshell_handle_command_input(char** str, char** vt100_esc, unsigned int
 	return characters_read;
 }
 
-void parse_command(char* str, char** command, int* argc, char*** argv) {
+void _pseudoshell_parse_command(char* str, char** command, int* argc, char*** argv) {
 	char* strp = str;
 	char* whitespace; 
 	char* next_whitespace;
@@ -442,7 +450,7 @@ void parse_command(char* str, char** command, int* argc, char*** argv) {
 	*argv = _argv;
 }
 
-void remove_empty_arguments(int* argc, char*** argv) {
+void _pseudoshell_remove_empty_arguments(int* argc, char*** argv) {
 	int empty_count = 0;
 	char** argvp = *argv;
 
@@ -468,7 +476,7 @@ void remove_empty_arguments(int* argc, char*** argv) {
 	*argc = _argc;
 }
 
-void print_error_for_result(int result) {
+void _pseudoshell_print_error_for_result(int result) {
 	char* error_string = get_facility_error_message(result);
 	if(error_string != NULL)
 		printf("%s\n", error_string);
@@ -476,26 +484,26 @@ void print_error_for_result(int result) {
 		printf("Unknown error occured (%d).\n", result);
 }
 
-void check_result_print_error(int result) {
+void _pseudoshell_check_result_print_error(int result) {
 	if(result != FACILITIES_OK)
-		print_error_for_result(result);
+		_pseudoshell_print_error_for_result(result);
 }
 
-void check_result_print_error_or_success_message(int result, char* success_msg) {
+void _pseudoshell_check_result_print_error_or_success_message(int result, char* success_msg) {
 	if(result != FACILITIES_OK)
-		print_error_for_result(result);
+		_pseudoshell_print_error_for_result(result);
 	else
 		fputs(success_msg, stdout);
 }
 
-char* get_everything_after_command(char* command_str, char* command) {
+char* _pseudoshell_get_everything_after_command(char* command_str, char* command) {
 	char* strp = command_str+strlen(command);
 	while(*strp == ' ')
 		strp++;
 	return strp;
 }
 
-char* get_specific_success_message(char* start, char* specific, char* end) {
+char* _pseudoshell_get_specific_success_message(char* start, char* specific, char* end) {
 	char* success_msg = NULL;
 	unsigned int success_msg_allocated_length = 0;
 	success_msg = strappendrealloc(success_msg, &success_msg_allocated_length, PSEUDOSHELL_BUFFER_SIZE, start);
@@ -505,64 +513,64 @@ char* get_specific_success_message(char* start, char* specific, char* end) {
 	return success_msg;
 }
 
-void protest_command_requires_agument(char* command) {
+void _pseudoshell_protest_command_requires_agument(char* command) {
 	printf("'%s' command requires an argument.\n", command);
 }
 
-int execute_command(char* command_str, char** commandp, int* argcp, char*** argvp) {
+int _pseudoshell_execute_command(char* command_str, char** commandp, int* argcp, char*** argvp) {
 	if(strcmp(*commandp, "exit") == 0 || strcmp(*commandp, "quit") == 0)
 		return facility_exit() == FACILITIES_OK ? PSEUDOSHELL_OK : PSEUDOSHELL_CONTINUE;
 	else if(strcmp(*commandp, "store") == 0)
-		check_result_print_error(facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION));
+		_pseudoshell_check_result_print_error(facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION));
 	else if(strcmp(*commandp, "password") == 0)
-		check_result_print_error(facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION));
+		_pseudoshell_check_result_print_error(facility_switch_mode(FACILITIES_MODE_PASSWORD_MANIPULATION));
 	else if(strcmp(*commandp, "memorize") == 0)
-		check_result_print_error(facility_switch_mode(FACILITIES_MODE_MEMORIZATION));
+		_pseudoshell_check_result_print_error(facility_switch_mode(FACILITIES_MODE_MEMORIZATION));
 	else if(strcmp(*commandp, "transfer") == 0)
-		check_result_print_error(facility_switch_mode(FACILITIES_MODE_TRANSFER));
+		_pseudoshell_check_result_print_error(facility_switch_mode(FACILITIES_MODE_TRANSFER));
 	else if(strcmp(*commandp, "init") == 0)
-		check_result_print_error(facility_init());
+		_pseudoshell_check_result_print_error(facility_init());
 	else if(strcmp(*commandp, "set") == 0) {
-		remove_empty_arguments(argcp, argvp);
+		_pseudoshell_remove_empty_arguments(argcp, argvp);
 
 		if(*argcp != 3) {
-			protest_command_requires_agument(*commandp);
+			_pseudoshell_protest_command_requires_agument(*commandp);
 			return PSEUDOSHELL_OK;
 		}
 
 		int res = facility_set((*argvp)[1]);
-		check_result_print_error(res);
+		_pseudoshell_check_result_print_error(res);
 
 		if(res != FACILITIES_OK)
 			return PSEUDOSHELL_OK;
 
-		check_result_print_error(facility_to((*argvp)[2]));
+		_pseudoshell_check_result_print_error(facility_to((*argvp)[2]));
 	}
 	else if(strcmp(*commandp, "get") == 0) {
-		remove_empty_arguments(argcp, argvp);
+		_pseudoshell_remove_empty_arguments(argcp, argvp);
 
 		if(*argcp < 0) {
-			protest_command_requires_agument(*commandp);
+			_pseudoshell_protest_command_requires_agument(*commandp);
 			return PSEUDOSHELL_OK;
 		}
 
-		check_result_print_error(facility_get((*argvp)[1]));
+		_pseudoshell_check_result_print_error(facility_get((*argvp)[1]));
 	}
 	else if(strcmp(*commandp, "load") == 0)
-		check_result_print_error(facility_load(get_everything_after_command(command_str, *commandp)));
+		_pseudoshell_check_result_print_error(facility_load(_pseudoshell_get_everything_after_command(command_str, *commandp)));
 	else if(strcmp(*commandp, "save") == 0)
-		check_result_print_error(facility_save());
+		_pseudoshell_check_result_print_error(facility_save());
 	else if(strcmp(*commandp, "save-as") == 0)
-		check_result_print_error(facility_save_as(get_everything_after_command(command_str, *commandp)));
+		_pseudoshell_check_result_print_error(facility_save_as(_pseudoshell_get_everything_after_command(command_str, *commandp)));
 	else if(strcmp(*commandp, "unlock") == 0)
-		check_result_print_error(facility_unlock());
+		_pseudoshell_check_result_print_error(facility_unlock());
 	else if(strcmp(*commandp, "lock") == 0)
-		check_result_print_error(facility_lock());
+		_pseudoshell_check_result_print_error(facility_lock());
 	else if(strcmp(*commandp, "close") == 0)
-		check_result_print_error(facility_close());
+		_pseudoshell_check_result_print_error(facility_close());
 	else if(strcmp(*commandp, "fetch") == 0) {
 		char* read_str;
-		char* str = get_everything_after_command(command_str, *commandp);
+		char* str = _pseudoshell_get_everything_after_command(command_str, *commandp);
 
 		unsigned long id = strtoul(str, &read_str, 10);
 		if(id == 0 && (read_str-str) != strlen(str)) {
@@ -570,12 +578,12 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 			return PSEUDOSHELL_OK;
 		}
 
-		check_result_print_error(facility_fetch(id));
+		_pseudoshell_check_result_print_error(facility_fetch(id));
 	}
 	else if(strcmp(*commandp, "find") == 0)
-		check_result_print_error(facility_find(get_everything_after_command(command_str, *commandp)));
+		_pseudoshell_check_result_print_error(facility_find(_pseudoshell_get_everything_after_command(command_str, *commandp)));
 	else if(strcmp(*commandp, "display") == 0) {
-		remove_empty_arguments(argcp, argvp);
+		_pseudoshell_remove_empty_arguments(argcp, argvp);
 
 		unsigned long start, count;
 
@@ -602,10 +610,10 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 			}
 		}
 
-		check_result_print_error(facility_display(start, count));
+		_pseudoshell_check_result_print_error(facility_display(start, count));
 	}
 	else if(strcmp(*commandp, "peek") == 0) {
-		remove_empty_arguments(argcp, argvp);
+		_pseudoshell_remove_empty_arguments(argcp, argvp);
 
 		unsigned long start, count;
 
@@ -632,13 +640,13 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 			}
 		}
 
-		check_result_print_error(facility_peek(start, count, false, NULL, NULL));
+		_pseudoshell_check_result_print_error(facility_peek(start, count, false, NULL, NULL));
 	}
 	else if(strcmp(*commandp, "generate") == 0)
-		check_result_print_error(facility_generate(get_everything_after_command(command_str, *commandp)));
+		_pseudoshell_check_result_print_error(facility_generate(_pseudoshell_get_everything_after_command(command_str, *commandp)));
 	else if(strcmp(*commandp, "remove") == 0) {
 		char* read_str;
-		char* str = get_everything_after_command(command_str, *commandp);
+		char* str = _pseudoshell_get_everything_after_command(command_str, *commandp);
 
 		unsigned long id = strtoul(str, &read_str, 10);
 		if(id == 0 && (read_str-str) != strlen(str)) {
@@ -646,10 +654,10 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 			return PSEUDOSHELL_OK;
 		}
 
-		if(!present_yesno_prompt("Are you sure? Removed passwords cannot be restored.", true))
+		if(!pseudoshell_present_yesno_prompt("Are you sure? Removed passwords cannot be restored.", true))
 			return PSEUDOSHELL_OK;
 
-		check_result_print_error(facility_remove(id));
+		_pseudoshell_check_result_print_error(facility_remove(id));
 	}
 	else
 		printf("Unknown command '%s'.\nUse 'help' to view the list of available commands.\n", *commandp);
@@ -657,7 +665,7 @@ int execute_command(char* command_str, char** commandp, int* argcp, char*** argv
 	return PSEUDOSHELL_OK;
 }
 
-void free_and_reset_command_variables(char** command_str, char** command, int* argc, char*** argv) {
+void _pseudoshell_free_and_reset_command_variables(char** command_str, char** command, int* argc, char*** argv) {
 	free(*command_str);
 	free(*command);
 	for(int it = 0; it < *argc; it++)
@@ -678,7 +686,7 @@ int enter_pseudoshell_loop() {
 	int ret = PSEUDOSHELL_OK;
 
 	while(true) {
-		free_and_reset_command_variables(&command_str, &command, &argc, &argv);
+		_pseudoshell_free_and_reset_command_variables(&command_str, &command, &argc, &argv);
 		fputs(PSEUDOSHELL_LOOP_PROMPT_START, stdout);
 		fputs(mode_short_names[mode], stdout);
 		fputs(PSEUDOSHELL_LOOP_PROMPT_END, stdout);
@@ -702,19 +710,19 @@ int enter_pseudoshell_loop() {
 			free(vt100_esc);
 		}
 
-		parse_command(command_str, &command, &argc, &argv);
-		ret = execute_command(command_str, &command, &argc, &argv);
+		_pseudoshell_parse_command(command_str, &command, &argc, &argv);
+		ret = _pseudoshell_execute_command(command_str, &command, &argc, &argv);
 
 		if(ret == PSEUDOSHELL_CONTINUE)
 			continue;
 
 		if(ret != PSEUDOSHELL_OK) {
-			free_and_reset_command_variables(&command_str, &command, &argc, &argv);
+			_pseudoshell_free_and_reset_command_variables(&command_str, &command, &argc, &argv);
 			return ret;
 		}
 
 		if(strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0) {
-			free_and_reset_command_variables(&command_str, &command, &argc, &argv);
+			_pseudoshell_free_and_reset_command_variables(&command_str, &command, &argc, &argv);
 			break;
 		}
 	}

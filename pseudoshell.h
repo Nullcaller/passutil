@@ -44,9 +44,9 @@ int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char
 
 /*** PROMPTING (NOT THE LLM KIND) FUNCTIONS ***/
 
-int present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid);
+int pseudoshell_present_prompt(char* prompt, char* options_LOWERCASE, bool repeat_until_valid);
 
-bool present_yesno_prompt(char* prompt, bool repeat_until_valid);
+bool pseudoshell_present_yesno_prompt(char* prompt, bool repeat_until_valid);
 
 /*** COMMAND-RELATED FUNCTIONS ***/
 
@@ -55,10 +55,6 @@ bool present_yesno_prompt(char* prompt, bool repeat_until_valid);
 
 #define _PSEUDOSHELL_HANDLE_COMMAND_INPUT_TERMINAL_SET_FAIL_MESSAGE "ERROR: Couldn't set terminal state"
 #define _PSEUDOSHELL_HANDLE_COMMAND_INPUT_TERMINAL_RESET_FAIL_MESSAGE "WARNING: Couldn't reset terminal state"
-
-int _pseudoshell_handle_command_input(char** str, char** vt100_esc, unsigned int piece_length);
-
-void parse_command(char* str, char** command, int* argc, char*** argv);
 
 #define PSEUDOSHELL_OK			0
 #define PSEUDOSHELL_CONTINUE	1

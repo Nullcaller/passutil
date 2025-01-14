@@ -466,7 +466,7 @@ int facility_save_as(char* path) {
 
 	if((loaded_store_path == NULL || !(strcmp(path, loaded_store_path) == 0)) && (access(path_metadata_file, F_OK) == 0 || access(path_master_file, F_OK) == 0)) {
 		if(interactive) {
-			if(!present_yesno_prompt("Files already exist. Overwrite?", true)) {
+			if(!pseudoshell_present_yesno_prompt("Files already exist. Overwrite?", true)) {
 				free(path_metadata_file);
 				free(path_master_file);
 				return FACILITIES_SAVE_OVERWRITE_DENIED;
@@ -515,7 +515,7 @@ int facility_close() {
 
 	if(FACILITIES_STORE_DIRTY) {
 		if(interactive) {
-			if(!present_yesno_prompt("There are unsaved changes to the store. If the store is closed, THEY WILL BE LOST. Close regardless?", true))
+			if(!pseudoshell_present_yesno_prompt("There are unsaved changes to the store. If the store is closed, THEY WILL BE LOST. Close regardless?", true))
 				return FACILITIES_CLOSE_DIRTY_DISCARD_DENIED;
 		} else {
 			if(!yes) {
@@ -763,7 +763,7 @@ int facility_peek(unsigned long start, unsigned long count, bool present_yn_prom
 		if(!quiet && !present_yn_prompt)
 			printf("Press any key to continue.\n");
 		if(present_yn_prompt) {
-			*prompt_result = present_yesno_prompt(prompt, false);
+			*prompt_result = pseudoshell_present_yesno_prompt(prompt, false);
 		} else {
 			char passchar;
 			pseudoshell_get_sepcific_hidden_character(&passchar, "", "", false);
@@ -866,7 +866,7 @@ int facility_exit() {
 	
 	if(FACILITIES_STORE_DIRTY) {
 		if(interactive) {
-			if(!present_yesno_prompt("Loaded store has unsaved changes. Exit regardless?", true))
+			if(!pseudoshell_present_yesno_prompt("Loaded store has unsaved changes. Exit regardless?", true))
 				return FACILITIES_EXIT_DIRTY_DISCARD_DENIED;
 		} else {
 			if(!yes) {
