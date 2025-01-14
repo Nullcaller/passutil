@@ -129,6 +129,9 @@ int pseudoshell_getcommand(char** str, char** vt100_esc, unsigned int piece_leng
 			if(_vt100_esc != NULL)
 				free(_vt100_esc);
 			_vt100_esc = strcpymalloc(_str+vt100_pos);
+			str_length -= strlen(_vt100_esc);
+			_str[str_length] = '\0';
+			printf("%s\n", _str);
 
 			if(strcmp(_vt100_esc+1, "[A") == 0)
 				break;
@@ -508,12 +511,13 @@ int enter_pseudoshell_loop() {
 
 			if(strcmp(vt100_esc+1, "[A") == 0) {
 				// TODO Command history
+				continue;
 			} else if(strcmp(vt100_esc+1, "[B") == 0) {
 				// TODO Command history
+				continue;
 			}
 
 			free(vt100_esc);
-			continue;
 		}
 
 		parse_command(command_str, &command, &argc, &argv);
