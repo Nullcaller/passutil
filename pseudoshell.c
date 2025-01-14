@@ -203,8 +203,8 @@ int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_lengt
 		return -1;
 
 	int character_handle_result;
-	while(true)
-		if((character_handle_result = _pseudoshell_handle_character_input(
+	while(true) {
+		character_handle_result = _pseudoshell_handle_character_input(
 			&characters_read,		// characters_readp
 			&_str,					// strp
 			&str_allocated_length,	// str_allocated_lengthp
@@ -225,9 +225,12 @@ int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_lengt
 			_pseudoshell_standard_terminators,				// character_list
 			_pseudoshell_standard_terminators_length,		// character_list_length
 			false,	// append_terminating_character
-			true	// echo_terminating_character
-		) != _PSEUDOSHELL_INPUT_LOOP_CONTINUE))
+			false	// echo_terminating_character
+		);
+
+		if(character_handle_result != _PSEUDOSHELL_INPUT_LOOP_CONTINUE)
 			break;
+	}
 
 	if(!tolerate_eof && (character_handle_result == _PSEUDOSHELL_INPUT_LOOP_EOF)) {
 		free(_str);
