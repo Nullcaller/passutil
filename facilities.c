@@ -18,6 +18,7 @@
 #include "util.h"
 #include "storage.h"
 #include "generation.h"
+#include "memorizer.h"
 
 int facility_switch_mode(unsigned short new_mode) {
 	unsigned short allowed_mode_count = 4;
@@ -346,9 +347,10 @@ int facility_unlock() {
 	bool prompt_result;
 
 	while(true) {
-		if(interactive)
+		if(interactive) {
 			length = pseudoshell_get_password(&key, "Enter key: ", PSEUDOSHELL_BUFFER_SIZE, true);
-		else
+			putc('\n', stdout);
+		} else
 			length = pseudoshell_get_string(&key, PSEUDOSHELL_BUFFER_SIZE);
 
 		if(length <= 0) {
@@ -851,7 +853,33 @@ int facility_select(unsigned long id) {
 	if(!FACILITIES_STORE_UNLOCKED)
 		return FACILITIES_SELECT_STORE_LOCKED;
 
-	// TODO
+	if(id >= loaded_store->password_count)
+		return FACILITIES_SELECT_ID_OUT_OF_BOUNDS;
+
+	char* shuffle_key_format = strcpymalloc(loaded_store->passwords[id]->format);
+	char* shuffle_key;
+	generate_shuffle_key(&shuffle_key, shuffle_key_format);
+	char* password_plain = password_read_plain(loaded_store->passwords[id]);
+	char* shuffled_password = shuffle(password_plain, shuffle_key, shuffle_key_format);
+	free(password_plain);
+
+	switch(memorize_mode) {
+		case FACILITIES_MEMORIZE_MODE_WHOLE:
+			while(true) 
+				if(memorize_direct(shuffled_password, shuffle_key, shuffle_key_format) == MEMORIZER_ERROR)
+					break;
+			break;
+		case FACILITIES_MEMORIZE_MODE_BY_SYMBOL:
+			while(true)
+				if(memorize_by_symbols(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, 2, true, false) == MEMORIZER_ERROR)
+					break;
+			break;
+		case FACILITIES_MEMORIZE_MODE_BY_NTH_SYMBOL:
+			while(true)
+				if(memorize_nth_symbol(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, memorize_symbol_number, 2) == MEMORIZER_ERROR)
+					break;
+			break;
+	}
 
 	return FACILITIES_OK;
 }
@@ -1016,6 +1044,8 @@ char* get_facility_error_message(int error) {
 			return FACILITIES_SELECT_STORE_INIT_NOT_COMPLETE_MESSAGE;
 		case FACILITIES_SELECT_STORE_LOCKED:
 			return FACILITIES_SELECT_STORE_LOCKED_MESSAGE;
+		case FACILITIES_SELECT_ID_OUT_OF_BOUNDS:
+			return FACILITIES_SELECT_ID_OUT_OF_BOUNDS_MESSAGE;
 		case FACILITIES_EXIT_DIRTY_DISCARD_DENIED:
 			return FACILITIES_EXIT_DIRTY_DISCARD_DENIED_MESSAGE;
 	}

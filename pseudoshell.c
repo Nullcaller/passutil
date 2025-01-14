@@ -678,6 +678,18 @@ int _pseudoshell_execute_command(char* command_str, char** commandp, int* argcp,
 
 		_pseudoshell_check_result_print_error(facility_remove(id));
 	}
+	else if(strcmp(*commandp, "select") == 0) {
+		char* read_str;
+		char* str = _pseudoshell_get_everything_after_command(command_str, *commandp);
+
+		unsigned long id = strtoul(str, &read_str, 10);
+		if(id == 0 && (read_str-str) != strlen(str)) {
+			printf("Couldn't parse the password id.\n");
+			return PSEUDOSHELL_OK;
+		}
+
+		_pseudoshell_check_result_print_error(facility_select(id));
+	}
 	else
 		printf("Unknown command '%s'.\nUse 'help' to view the list of available commands.\n", *commandp);
 

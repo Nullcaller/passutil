@@ -194,6 +194,7 @@ int facility_remove(unsigned long id);
 #define FACILITIES_SELECT_STORE_NOT_LOADED			58
 #define FACILITIES_SELECT_STORE_INIT_NOT_COMPLETE	59
 #define FACILITIES_SELECT_STORE_LOCKED				60
+#define FACILITIES_SELECT_ID_OUT_OF_BOUNDS			61
 
 int facility_select(unsigned long id);
 
@@ -290,6 +291,7 @@ int facility_exit();
 #define FACILITIES_SELECT_STORE_NOT_LOADED_MESSAGE			"select: Store not loaded"
 #define FACILITIES_SELECT_STORE_INIT_NOT_COMPLETE_MESSAGE	"select: Store init not complete"
 #define FACILITIES_SELECT_STORE_LOCKED_MESSAGE				"select: Store is LOCKED"
+#define FACILITIES_SELECT_ID_OUT_OF_BOUNDS_MESSAGE			"select: Selected index is out of bounds"
 
 #define FACILITIES_EXIT_DIRTY_DISCARD_DENIED_MESSAGE		"exit: Unsaved changes detected, discard denied"
 
