@@ -347,7 +347,7 @@ int facility_unlock() {
 
 	while(true) {
 		if(interactive)
-			length = pseudoshell_get_password(&key, "Enter key: ", PSEUDOSHELL_BUFFER_SIZE);
+			length = pseudoshell_get_password(&key, "Enter key: ", PSEUDOSHELL_BUFFER_SIZE, true);
 		else
 			length = pseudoshell_get_string(&key, PSEUDOSHELL_BUFFER_SIZE);
 
@@ -766,7 +766,7 @@ int facility_peek(unsigned long start, unsigned long count, bool present_yn_prom
 			*prompt_result = pseudoshell_present_yesno_prompt(prompt, false);
 		} else {
 			char passchar;
-			pseudoshell_get_sepcific_hidden_character(&passchar, "", "", false);
+			pseudoshell_get_sepcific_hidden_character(&passchar, "", "", false, false);
 		}
 
 		if(!quiet) {

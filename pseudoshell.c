@@ -187,7 +187,7 @@ int pseudoshell_get_string(char** str, unsigned int piece_length) {
 	return characters_read;
 }
 
-int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_length) {
+int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_length, bool tolerate_eof) {
 	unsigned int characters_read = 0;
 	char* _str = NULL;
 	char* _vt100_esc = NULL;
@@ -202,8 +202,9 @@ int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_lengt
 	if(_pseudoshell_terminal_set() != 0)
 		return -1;
 
+	int character_handle_result;
 	while(true)
-		if(_pseudoshell_handle_character_input(
+		if((character_handle_result = _pseudoshell_handle_character_input(
 			&characters_read,		// characters_readp
 			&_str,					// strp
 			&str_allocated_length,	// str_allocated_lengthp
@@ -219,14 +220,23 @@ int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_lengt
 			true,	// remove_vt100_codes_from_str
 			NULL,	// terminating_vt100_codes
 			0,		// terminating_vt100_codes_length
-			_PSEUDOSHELL_INPUT_LOOP_EXIT,		// eof_return_value
+			_PSEUDOSHELL_INPUT_LOOP_EOF,		// eof_return_value
 			false,	// is_whitelist
 			_pseudoshell_newline,				// character_list
 			_pseudoshell_newline_length,		// character_list_length
 			false,	// append_terminating_character
 			true	// echo_terminating_character
-		) == _PSEUDOSHELL_INPUT_LOOP_EXIT)
+		) != _PSEUDOSHELL_INPUT_LOOP_CONTINUE))
 			break;
+
+	if(!tolerate_eof && (character_handle_result == _PSEUDOSHELL_INPUT_LOOP_EOF)) {
+		free(_str);
+		free(_vt100_esc);
+
+		_pseudoshell_terminal_reset();
+		
+		return -1;
+	}
 
 	if(_str != NULL)
 		_str = strtrimrealloc(_str, &str_allocated_length);
@@ -241,7 +251,7 @@ int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_lengt
 	return str_length;
 }
 
-int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid) {
+int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid, bool tolerate_eof) {
 	fputs(prompt, stdout);
 
 	if(_pseudoshell_terminal_set() != 0)
@@ -272,6 +282,9 @@ int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char
 	}
 
 	_pseudoshell_terminal_reset();
+
+	if(!tolerate_eof && (c == EOF))
+		return -1;
 
 	if(c == '\n' || c == EOF || c == '\r')
 		return 0;
