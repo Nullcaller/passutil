@@ -30,6 +30,8 @@ struct password {
 	unsigned short byte_length;
 	unsigned short encrypted_byte_length;
 	char* format;
+	unsigned short iv_length;
+	char* iv;
 	char* encrypted_password;
 };
 
@@ -77,7 +79,7 @@ bool store_parse_field(unsigned char* string, unsigned int max_length, unsigned 
 
 bool store_parse_metadata_store_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** algorithm, bool* key_verifiable, char** key_verification_algorithm, unsigned long* key_verification_algorithm_rounds, char** key_verification_salt, char** key_verification_text, unsigned long* password_count);
 
-bool store_parse_metadata_password_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** identifier, unsigned short* password_length, unsigned short* password_byte_length, unsigned short* password_encrypted_byte_length, char** format);
+bool store_parse_metadata_password_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** identifier, unsigned short* password_length, unsigned short* password_byte_length, unsigned short* password_encrypted_byte_length, char** format, unsigned short* iv_length);
 
 Store* store_deserialize_metadata_store(unsigned char* serialized_metadata, unsigned int length, unsigned int* position);
 

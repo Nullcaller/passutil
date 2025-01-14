@@ -19,6 +19,8 @@ Password* password_construct() {
 	new_password->byte_length = 0;
 	new_password->encrypted_byte_length = 0;
 	new_password->format = NULL;
+	new_password->iv_length = 0;
+	new_password->iv = NULL;
 	new_password->encrypted_password = NULL;
 	return new_password;
 }
@@ -26,12 +28,13 @@ Password* password_construct() {
 void password_destroy(Password* password) {
 	free(password->identifier);
 	free(password->format);
+	free(password->iv);
 	free(password->encrypted_password);
 	free(password);
 }
 
 unsigned char* password_read_bytes(Password* password, unsigned int* byte_length) {
-	unsigned char* plain_password_bytes = decrypt(password->store->algorithm, password->encrypted_password, password->byte_length, password->store->shuffled_key, password->store->shuffle_key, password->store->shuffle_key_format);
+	unsigned char* plain_password_bytes = decrypt(password->store->algorithm, password->encrypted_password, password->byte_length, password->store->shuffled_key, password->store->shuffle_key, password->store->shuffle_key_format, password->iv_length, password->iv);
 	*byte_length = password->byte_length;
 	return plain_password_bytes;
 }
@@ -72,8 +75,12 @@ bool passsword_write(Store* store, Password* password, unsigned char* plain_pass
 	password->byte_length = byte_length;
 
 	unsigned int encrypted_byte_length;
-	unsigned char* encrypted_password_bytes = encrypt(&encrypted_byte_length, store->algorithm, plain_password_bytes, byte_length, store->shuffled_key, store->shuffle_key, store->shuffle_key_format);
+	unsigned int iv_length = 0;
+	unsigned char* iv = NULL;
+	unsigned char* encrypted_password_bytes = encrypt(&encrypted_byte_length, &iv_length, &iv, store->algorithm, plain_password_bytes, byte_length, store->shuffled_key, store->shuffle_key, store->shuffle_key_format);
 
+	password->iv_length = iv_length;
+	password->iv = iv;
 	password->encrypted_byte_length = encrypted_byte_length;
 	password->encrypted_password = encrypted_password_bytes;
 
@@ -179,7 +186,7 @@ unsigned char* store_serialize_metadata(Store* store, unsigned int* length) {
 	Password* password;
 	for(unsigned long it = 0; it < passcount; it++) {
 		password = store->passwords[it];
-		sprintf(buffer, "identifier=`%s`,encbytelen=`%hd`,bytelen=`%hd`,len=`%hd`,formatlen=`%ld`,format=`%s`\n", password->identifier, password->encrypted_byte_length, password->byte_length, password->length, strlen(password->format), password->format);
+		sprintf(buffer, "identifier=`%s`,encbytelen=`%hd`,bytelen=`%hd`,len=`%hd`,formatlen=`%ld`,format=`%s`,ivlen=`%hd`\n", password->identifier, password->encrypted_byte_length, password->byte_length, password->length, strlen(password->format), password->format, password->iv_length);
 		serialized_metadata = strappendrealloc(serialized_metadata, &sml, piece_length, buffer);
 	}
 
@@ -195,12 +202,16 @@ unsigned char* store_serialize_password_sequence(Store* store, unsigned int* len
 	unsigned long password_count = store->password_count;
 
 	unsigned int byte_length = 0;
-	for(unsigned long it = 0; it < password_count; it++)
+	for(unsigned long it = 0; it < password_count; it++) {
+		byte_length += passwords[it]->iv_length;
 		byte_length += passwords[it]->encrypted_byte_length;
+	}
 	
 	unsigned char* serialized_password_sequence = malloc(sizeof(unsigned char)*byte_length);
 	byte_length = 0;
 	for(unsigned long it = 0; it < password_count; it++) {
+		memcpy(serialized_password_sequence+byte_length, passwords[it]->iv, passwords[it]->iv_length);
+		byte_length += passwords[it]->iv_length;
 		memcpy(serialized_password_sequence+byte_length, passwords[it]->encrypted_password, passwords[it]->encrypted_byte_length);
 		byte_length += passwords[it]->encrypted_byte_length;
 	}
@@ -443,7 +454,7 @@ bool store_parse_metadata_store_string(unsigned char* serialized_metadata, unsig
 	return true;
 }
 
-bool store_parse_metadata_password_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** identifier, unsigned short* password_length, unsigned short* password_byte_length, unsigned short* password_encrypted_byte_length, char** format) {
+bool store_parse_metadata_password_string(unsigned char* serialized_metadata, unsigned int length, unsigned int* position, char** identifier, unsigned short* password_length, unsigned short* password_byte_length, unsigned short* password_encrypted_byte_length, char** format, unsigned short* iv_length) {
 	unsigned char* smp = serialized_metadata+*position;
 	
 	char* _identifier;
@@ -456,6 +467,8 @@ bool store_parse_metadata_password_string(unsigned char* serialized_metadata, un
 	char* format_length_string;
 	unsigned long format_length;
 	char* _format;
+	char* _iv_length_string;
+	unsigned short _iv_length;
 
 	unsigned int posadd = 0;
 	char* read_str;
@@ -520,6 +533,21 @@ bool store_parse_metadata_password_string(unsigned char* serialized_metadata, un
 		return false;
 	}
 
+	if(!store_parse_field(smp, length-*position-posadd, &posadd, "ivlen", &_iv_length_string)) {
+		free(_identifier);
+		free(_format);
+		return false;
+	}
+
+	_iv_length = strtoul(_iv_length_string, &read_str, 10);
+	if((_iv_length == 0) && ((read_str-_iv_length_string) != strlen(_iv_length_string))) {
+		free(_identifier);
+		free(_format);
+		free(_iv_length_string);
+		return false;
+	}
+	free(_iv_length_string);
+
 	if(length-*position-posadd > 0)
 		posadd += pseudosscanf(smp+posadd, "\n"); // Eat the newline if available
 		
@@ -528,6 +556,7 @@ bool store_parse_metadata_password_string(unsigned char* serialized_metadata, un
 	*password_byte_length = _password_byte_length;
 	*password_encrypted_byte_length = _password_encrypted_byte_length;
 	*format = _format;
+	*iv_length = _iv_length;
 	*position += posadd;
 
 	return true;
@@ -546,7 +575,7 @@ Password* store_deserialize_metadata_password(Store* store, unsigned char* seria
 	Password* password = password_construct();
 	password->store = store;
 
-	if(!store_parse_metadata_password_string(serialized_metadata, length, position, &password->identifier, &password->length, &password->byte_length, &password->encrypted_byte_length, &password->format))
+	if(!store_parse_metadata_password_string(serialized_metadata, length, position, &password->identifier, &password->length, &password->byte_length, &password->encrypted_byte_length, &password->format, &password->iv_length))
 		return NULL;
 
 	return password;
@@ -577,7 +606,7 @@ Store* store_deserialize(unsigned char* serialized_metadata, unsigned int serial
 
 		passwords[it] = password;
 
-		if(bytepos+password->encrypted_byte_length > serialized_password_sequence_length) {
+		if(bytepos+password->encrypted_byte_length+password->iv_length > serialized_password_sequence_length) {
 			store_destroy(store);
 			for(unsigned long j = 0; j < it; j++)
 				password_destroy(passwords[j]);
@@ -586,10 +615,15 @@ Store* store_deserialize(unsigned char* serialized_metadata, unsigned int serial
 			return NULL;
 		}
 
+		char* iv = malloc(sizeof(char)*password->iv_length);
+		memcpy(iv, serialized_password_sequence+bytepos, password->iv_length);
+		bytepos += password->iv_length;
+
 		char* encrypted_password = malloc(sizeof(char)*password->encrypted_byte_length);
 		memcpy(encrypted_password, serialized_password_sequence+bytepos, password->encrypted_byte_length);
 		bytepos += password->encrypted_byte_length;
 
+		password->iv = iv;
 		password->encrypted_password = encrypted_password;
 	}
 

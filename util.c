@@ -8,6 +8,7 @@
 #include "util.h"
 
 #include "shuffler.h"
+#include "generation.h"
 
 int pseudosscanf(char* string, char* check_string) {
 	unsigned int length = strlen(check_string);
@@ -140,13 +141,14 @@ bool writefile(FILE* file, int max_attempts, char* data, unsigned int length) {
 	return true;
 }
 
-unsigned char* encrypt(unsigned int* result_length, char* cipher, unsigned char* bytes, unsigned int length, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
+unsigned char* encrypt(unsigned int* result_length, unsigned int* result_iv_length, unsigned char** ivp, char* cipher, unsigned char* bytes, unsigned int length, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
 	char* key = unshuffle(shuffled_key, shuffle_key, shuffle_key_format);
 	unsigned char* key_digest;
 	unsigned char* encrypted_bytes;
-	unsigned char* iv;
 
 	if(strcmp(cipher, "AES256") == 0) {
+		*result_iv_length = AES_BLOCK_SIZE;
+		*ivp = generate_bytes(*result_iv_length);
 		key_digest = malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
 		SHA256(key, strlen(key), key_digest);
 		free(key);
@@ -157,10 +159,7 @@ unsigned char* encrypt(unsigned int* result_length, char* cipher, unsigned char*
 		else
 			*result_length = sizeof(unsigned char)*(length/AES_BLOCK_SIZE+1)*AES_BLOCK_SIZE;
 		encrypted_bytes = malloc(*result_length);
-		iv = malloc(sizeof(unsigned char)*AES_BLOCK_SIZE);
-		memset(iv, 0, AES_BLOCK_SIZE);
-		AES_cbc_encrypt(bytes, encrypted_bytes, length, &aes_key, iv, AES_ENCRYPT);
-		free(iv);
+		AES_cbc_encrypt(bytes, encrypted_bytes, length, &aes_key, *ivp, AES_ENCRYPT);
 		free(key_digest);
 		return encrypted_bytes;
 	} else if(strcmp(cipher, "AES128") == 0) {
@@ -168,14 +167,15 @@ unsigned char* encrypt(unsigned int* result_length, char* cipher, unsigned char*
 	}
 }
 
-unsigned char* decrypt(char* cipher, unsigned char* encrypted_bytes, unsigned int length, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
+unsigned char* decrypt(char* cipher, unsigned char* encrypted_bytes, unsigned int length, char* shuffled_key, char* shuffle_key, char* shuffle_key_format, unsigned int iv_length, unsigned char* iv) {
 	char* key = unshuffle(shuffled_key, shuffle_key, shuffle_key_format);
 	unsigned char* key_digest;
 	unsigned char* bytes;
-	unsigned char* iv;
 	unsigned int bytes_length;
 
 	if(strcmp(cipher, "AES256") == 0) {
+		if(iv_length != AES_BLOCK_SIZE)
+			return NULL;
 		key_digest = malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
 		SHA256(key, strlen(key), key_digest);
 		free(key);
@@ -186,10 +186,7 @@ unsigned char* decrypt(char* cipher, unsigned char* encrypted_bytes, unsigned in
 		else
 			bytes_length = sizeof(unsigned char)*(length/AES_BLOCK_SIZE+1)*AES_BLOCK_SIZE;
 		bytes = malloc(bytes_length);
-		iv = malloc(sizeof(unsigned char)*AES_BLOCK_SIZE);
-		memset(iv, 0, AES_BLOCK_SIZE);
 		AES_cbc_encrypt(encrypted_bytes, bytes, length, &aes_key, iv, AES_DECRYPT);
-		free(iv);
 		free(key_digest);
 		return bytes;
 	} else if(strcmp(cipher, "AES128") == 0) {
