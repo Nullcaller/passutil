@@ -60,7 +60,8 @@ Consider this example: password = `ABE`, shuffle key = `DCFABE`, shuffle key for
 Feature-wise:
 
 - [ ] Store key verification (oh boy)
-- [ ] Add memorization helper to facilities and pseudoshell
+- [X] Add memorization helper to facilities and pseudoshell
+- [ ] Add more memorization options and allow changing them
 - [ ] Implement transfer functions
 - [ ] Add transfer functions to facilities and pseudoshell
 - [ ] Add facility-related arguments and make them do somehting (https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html)
