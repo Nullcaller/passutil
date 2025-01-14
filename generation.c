@@ -27,7 +27,7 @@ void generate_shuffle_key(char** key_var, char* key_format) {
 	*key_var = key;
 }
 
-unsigned char* generate_password_bytes(unsigned int length) {
+unsigned char* generate_bytes(unsigned int length) {
 	unsigned char* bytes = malloc(sizeof(unsigned char)*length);
 	randombytes_buf(bytes, length);
 	return bytes;
@@ -37,7 +37,7 @@ Password* generate_password(Store* store, char* format, unsigned int length) {
 	Password* password = password_construct();
 
 	unsigned int length_bytes = length*(sizeof(unsigned long long)/sizeof(char));
-	unsigned char* plain_password_bytes = generate_password_bytes(length_bytes);
+	unsigned char* plain_password_bytes = generate_bytes(length_bytes);
 	
 	passsword_write(store, password, plain_password_bytes, length_bytes, format, length);
 	

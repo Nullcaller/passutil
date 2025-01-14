@@ -5,7 +5,7 @@
 
 void generate_shuffle_key(char** key_var, char* key_format);
 
-unsigned char* generate_password_bytes(unsigned int length);
+unsigned char* generate_bytes(unsigned int length);
 
 Password* generate_password(Store* store, char* format, unsigned int length);
 
