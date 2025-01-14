@@ -33,6 +33,19 @@ static char* loaded_store_path = NULL;
 static char* password_format = FORMAT_AZaz09;
 static unsigned int password_length = 20;
 
+#define FACILITIES_MEMORIZE_MODE_WHOLE 0
+#define FACILITIES_MEMORIZE_MODE_BY_SYMBOL 1
+#define FACILITIES_MEMORIZE_MODE_BY_NTH_SYMBOL 2
+
+static unsigned short memorize_mode = FACILITIES_MEMORIZE_MODE_WHOLE;
+
+static unsigned short memorize_symbol_number = 0;
+
+#define FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR 0
+#define FACILITIES_MEMORIZE_REPEAT_MODE_REPEAT 1
+
+static unsigned short memorize_repeat_mode = FACILITIES_MEMORIZE_REPEAT_MODE_REPEAT;
+
 // State variable
 static unsigned long facilities_state = 0;
 
