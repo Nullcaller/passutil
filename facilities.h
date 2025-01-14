@@ -191,7 +191,11 @@ int facility_generate(char* identifier);
 
 int facility_remove(unsigned long id);
 
-int facility_memorize(unsigned long id);
+#define FACILITIES_SELECT_STORE_NOT_LOADED			58
+#define FACILITIES_SELECT_STORE_INIT_NOT_COMPLETE	59
+#define FACILITIES_SELECT_STORE_LOCKED				60
+
+int facility_select(unsigned long id);
 
 int facility_send();
 
@@ -282,6 +286,10 @@ int facility_exit();
 #define FACILITIES_REMOVE_STORE_NOT_LOADED_MESSAGE					"remove: Store not loaded"
 #define FACILITIES_REMOVE_STORE_INIT_NOT_COMPLETE_MESSAGE			"remove: Store init not complete"
 #define FACILITIES_REMOVE_REMOVED_PASSWORD_IS_NULL_MESSAGE			"remove: Remove succeeded, but removed password object is NULL (this is weird)"
+
+#define FACILITIES_SELECT_STORE_NOT_LOADED_MESSAGE			"select: Store not loaded"
+#define FACILITIES_SELECT_STORE_INIT_NOT_COMPLETE_MESSAGE	"select: Store init not complete"
+#define FACILITIES_SELECT_STORE_LOCKED_MESSAGE				"select: Store is LOCKED"
 
 #define FACILITIES_EXIT_DIRTY_DISCARD_DENIED_MESSAGE		"exit: Unsaved changes detected, discard denied"
 
