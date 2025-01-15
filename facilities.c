@@ -14,10 +14,10 @@
 #include "constants-formats.h"
 
 #include "util/string.h"
+#include "util/generation.h"
 #include "passutil.h"
 #include "pseudoshell.h"
 #include "storage.h"
-#include "generation.h"
 #include "memorizer.h"
 
 int facility_switch_mode(unsigned short new_mode) {

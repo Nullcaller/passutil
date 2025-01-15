@@ -10,6 +10,7 @@
 #include "util/io.h"
 #include "util/crypt.h"
 #include "util/shuffle.h"
+#include "util/generation.h"
 
 /*** PASSWORD-RELATED FUNCTIONS ***/
 

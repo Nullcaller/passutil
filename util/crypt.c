@@ -4,7 +4,7 @@
 #include "crypt.h"
 
 #include "shuffle.h"
-#include "../generation.h"
+#include "generation.h"
 
 unsigned char* encrypt(unsigned int* result_length, unsigned int* result_iv_length, unsigned char** ivp, char* cipher, unsigned char* bytes, unsigned int length, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
 	char* key = unshuffle(shuffled_key, shuffle_key, shuffle_key_format);

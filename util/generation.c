@@ -3,8 +3,6 @@
 
 #include "generation.h"
 
-#include "storage.h"
-
 void generate_shuffle_key(char** key_var, char* key_format) {
 	unsigned int len = strlen(key_format);
 	char* key_remainder = malloc(len+1);

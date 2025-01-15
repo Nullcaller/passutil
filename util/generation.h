@@ -1,5 +1,3 @@
-#include "storage.h"
-
 #ifndef GENERATION_H
 #define GENERATION_H
 

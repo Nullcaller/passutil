@@ -20,7 +20,7 @@
 #include "util/io.c"
 #include "util/crypt.c"
 #include "util/shuffle.c"
-#include "generation.c"
+#include "util/generation.c"
 #include "storage.c"
 #include "memorizer.c"
 #include "facilities.c"
