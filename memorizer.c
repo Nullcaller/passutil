@@ -70,6 +70,7 @@ int memorize_nth_symbol(char* shuffled_password, char* shuffle_key, char* shuffl
 	selection_string[1] = '\0';
 	if(pseudoshell_get_sepcific_hidden_character(selection_string, MEMORIZER_CHOICE_PROMPT, possible_characters, true, false) <= 0) {
 		free(selection_string);
+		putc('\n', stdout);
 		return MEMORIZER_ERROR;
 	}
 
@@ -77,6 +78,7 @@ int memorize_nth_symbol(char* shuffled_password, char* shuffle_key, char* shuffl
 	unsigned short selection = strtoul(selection_string, &read_str, 10);
 	if(selection == 0 && strlen(selection_string) != (read_str-selection_string)) {
 		free(selection_string);
+		putc('\n', stdout);
 		return MEMORIZER_ERROR;
 	}
 	free(selection_string);

@@ -279,20 +279,21 @@ int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char
 		}
 
 		for(unsigned int it = 0; it < valid_char_count; it++)
-			if(c == valid_chars[it]) {
+			if(c == valid_chars[it] || (!tolerate_eof && (c == EOF || c == '\04'))) {
 				valid_char = true;
 				break;
 			}
+
 		if(valid_char || !repeat_until_valid)
 			break;
 	}
 
 	_pseudoshell_terminal_reset();
 
-	if(!tolerate_eof && (c == EOF))
+	if(!tolerate_eof && (c == EOF || c == '\04')) // EOF and EOT
 		return -1;
 
-	if(c == '\n' || c == EOF || c == '\r')
+	if(c == '\n' || c == EOF || c == '\04') // newline, EOF, EOT
 		return 0;
 	else {
 		*passchar = c;
