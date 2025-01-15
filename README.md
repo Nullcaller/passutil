@@ -32,18 +32,20 @@ All of the code is written with the goal of being humanly readable, to make chec
 
 ## Project Structure
 
-| **File**                     | **Purpose**                                                                                                                                                       |
-|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| constants-*.h                | Constants used throughout the code                                                                                                                                |
-| passutil.c, passutil.h       | Entry point, argument parsing                                                                                                                                     |
-| util.c, util.h               | Utility functions: string functions, direct file bytes read/write, AES encryption/decryption (to be moved)                                                        |
-| shuffler.c, shuffler.h       | Password "shuffling" utilities: passwords that are in RAM are stored "shuffled" when possible so as not to expose plain passwords                                 |
-| generation.c, generation.h   | Generator functions for shuffle keys and passwords utilizing libsodium                                                                                            |
-| storage.c, storage.h         | All things storage: Store and Password structures, serializers and deserializers, parsers, functions for working with storage and getting passwords in plain text |
-| memorizer.c, memorizer.h     | Functions to help memorize the passwords                                                                                                                          |
-| transfer.c, transfer.h       | Transfer functions                                                                                                                                                |
-| facilities.c, facilities.h   | Generalizations for functions available both as command-line arguments and in interactive mode                                                                    |
-| pseudoshell.c, pseudoshell.h | Interactive mode pseudoshell implementation                                                                                                                       |
+| **File**                             | **Purpose**                                                                                                                                               |
+|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| constants/*.h                        | Constants used throughout the code                                                                                                                        |
+| passutil.c, passutil.h               | Entry point, argument parsing                                                                                                                             |
+| util/string.c, util/string.h         | String utility functions                                                                                                                                  |
+| util/io.c, util/io.h                 | IO utility functions                                                                                                                                      |
+| util/crypt.c, util/crypt.h           | AES encryption/decryption utilizing OpenSSL                                                                                                               |
+| util/shuffle.c, util/shuffle.h       | Password "shuffling" utilities: passwords that are in RAM are stored "shuffled" when possible so as not to expose plain passwords                         |
+| util/generation.c, util/generation.h | Generator functions utilizing libsodium                                                                                                                   |
+| storage.c, storage.h                 | Store and Password structures, serializers and deserializers, parsers, generators, functions for working with storage and getting passwords in plain text |
+| memorizer.c, memorizer.h             | Functions to help memorize the passwords                                                                                                                  |
+| transfer.c, transfer.h               | Transfer functions                                                                                                                                        |
+| facilities.c, facilities.h           | Generalizations for functions available both as command-line arguments and in interactive mode                                                            |
+| pseudoshell.c, pseudoshell.h         | Interactive mode pseudoshell implementation                                                                                                               |
 
 ### Password "Shuffling"
 
