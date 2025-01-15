@@ -55,8 +55,14 @@ bool is_facility_field_name_allowed(char* field_name_to_validate) {
 		"format",
 		"length"
 	};
-	unsigned short mode_memorization_allowed_field_name_count = 0;
-	char* mode_memorization_allowed_field_names[] = {};
+	unsigned short mode_memorization_allowed_field_name_count = 5;
+	char* mode_memorization_allowed_field_names[] = {
+		"mode",
+		"symbol_number",
+		"choice_count",
+		"symbol_failure_mode",
+		"repeat_mode"
+	};
 	unsigned short mode_transfer_allowed_field_name_count = 0;
 	char* mode_transfer_allowed_field_names[] = {};
 
@@ -162,6 +168,71 @@ int facility_get(char* field_name_to_get) {
 				return FACILITIES_GET_NOT_IMPLEMENTED;
 
 			break;
+		case FACILITIES_MODE_MEMORIZATION:
+			if(strcmp(field_name_to_get, "mode") == 0) {
+				if(!quiet)
+					fputs("Current memorization mode: `", stdout);
+				switch(memorize_mode) {
+					case FACILITIES_MEMORIZE_MODE_WHOLE:
+						fputs("whole", stdout);
+						break;
+					case FACILITIES_MEMORIZE_MODE_BY_SYMBOL:
+						fputs("by_symbol", stdout);
+						break;
+					case FACILITIES_MEMORIZE_MODE_BY_NTH_SYMBOL:
+						fputs("by_nth_symbol", stdout);
+						break;
+					default:
+						fputs("UNKNOWN", stdout);
+						break;
+				}
+				if(!quiet)
+					putc('`', stdout);
+				putc('\n', stdout);
+			} else if(strcmp(field_name_to_get, "symbol_number") == 0) {
+				printf("Current memorization symbol number: %hd\n", memorize_symbol_number);
+			} else if(strcmp(field_name_to_get, "choice_count") == 0) {
+				printf("Current memorization choice count: %hd\n", memorize_choice_count);
+			} else if(strcmp(field_name_to_get, "symbol_failure_mode") == 0) {
+				if(!quiet)
+					fputs("Current memorization symbol failure mode: `", stdout);
+				switch(memorize_symbol_failure_mode) {
+					case FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_IGNORE:
+						fputs("ignore", stdout);
+						break;
+					case FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_REPEAT:
+						fputs("repeat", stdout);
+						break;
+					case FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_RESTART:
+						fputs("restart", stdout);
+						break;
+					default:
+						fputs("UNKNOWN", stdout);
+						break;
+				}
+				if(!quiet)
+					putc('`', stdout);
+				putc('\n', stdout);
+			} else if(strcmp(field_name_to_get, "repeat_mode") == 0) {
+				if(!quiet)
+					fputs("Current memorization repeat mode: `", stdout);
+				switch(memorize_repeat_mode) {
+					case FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR:
+						fputs("singular", stdout);
+						break;
+					case FACILITIES_MEMORIZE_REPEAT_MODE_REPEAT:
+						fputs("repeat", stdout);
+						break;
+					default:
+						fputs("UNKNOWN", stdout);
+						break;
+				}
+				if(!quiet)
+					putc('`', stdout);
+				putc('\n', stdout);
+			} else
+				return FACILITIES_GET_NOT_IMPLEMENTED;
+			break;
 		default:
 			return FACILITIES_GET_NOT_IMPLEMENTED;
 	}
@@ -249,6 +320,108 @@ int facility_to(char* field_value) {
 				if(new_length == 0 && (read_str-field_value != strlen(field_value)))
 					return FACILITIES_TO_PASSWORD_MANIPULATION_INVALID_LENGTH;
 				password_length = new_length;
+			} else
+				return FACILITIES_TO_NOT_IMPLEMENTED;
+
+			break;
+		case FACILITIES_MODE_MEMORIZATION:
+			if(strcmp(field_name, "mode") == 0) {
+				bool valid_mode = false;
+				unsigned short valid_mode_name_count = 3;
+				char* valid_mode_names[] = {
+					"whole",
+					"by_symbol",
+					"by_nth_symbol"
+				};
+				unsigned short valid_modes[] = {
+					FACILITIES_MEMORIZE_MODE_WHOLE,
+					FACILITIES_MEMORIZE_MODE_BY_SYMBOL,
+					FACILITIES_MEMORIZE_MODE_BY_NTH_SYMBOL
+				};
+				unsigned short index;
+				for(unsigned short it = 0; it < valid_mode_name_count; it++)
+					if(strcmp(field_value, valid_mode_names[it]) == 0) {
+						valid_mode = true;
+						index = it;
+						break;
+					}
+				if(!valid_mode) {
+					if(!quiet) {
+						printf("Invalid mode. Valid modes are:\n");
+						for(unsigned short it = 0; it < valid_mode_name_count; it++)
+							printf("- `%s`\n", valid_mode_names[it]);
+					}
+					return FACILITIES_TO_MEMORIZATION_INVALID_MODE;
+				}
+				memorize_mode = valid_modes[index];
+			} else if(strcmp(field_name, "symbol_number") == 0) {
+				char* read_str;
+				unsigned int new_symbol_number = strtoul(field_value, &read_str, 10);
+				if(new_symbol_number == 0 && (read_str-field_value != strlen(field_value)))
+					return FACILITIES_TO_MEMORIZATION_INVALID_SYMBOL_NUMBER;
+				memorize_symbol_number = new_symbol_number;
+			} else if(strcmp(field_name, "choice_count") == 0) {
+				char* read_str;
+				unsigned int new_choice_count = strtoul(field_value, &read_str, 10);
+				if(new_choice_count == 0 && (read_str-field_value != strlen(field_value)))
+					return FACILITIES_TO_MEMORIZATION_INVALID_CHOICE_COUNT;
+				memorize_choice_count = new_choice_count;
+			} else if(strcmp(field_name, "symbol_failure_mode") == 0) {
+				bool valid_symbol_failure_mode = false;
+				unsigned short valid_symbol_failure_mode_name_count = 3;
+				char* valid_symbol_failure_mode_names[] = {
+					"ignore",
+					"repeat",
+					"restart"
+				};
+				unsigned short valid_symbol_failure_modes[] = {
+					FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_IGNORE,
+					FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_REPEAT,
+					FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_RESTART
+				};
+				unsigned short index;
+				for(unsigned short it = 0; it < valid_symbol_failure_mode_name_count; it++)
+					if(strcmp(field_value, valid_symbol_failure_mode_names[it]) == 0) {
+						valid_symbol_failure_mode = true;
+						index = it;
+						break;
+					}
+				if(!valid_symbol_failure_mode) {
+					if(!quiet) {
+						printf("Invalid symbol failure mode. Valid symbol failure modes are:\n");
+						for(unsigned short it = 0; it < valid_symbol_failure_mode_name_count; it++)
+							printf("- `%s`\n", valid_symbol_failure_mode_names[it]);
+					}
+					return FACILITIES_TO_MEMORIZATION_INVALID_SYMBOL_FAILURE_MODE;
+				}
+				memorize_symbol_failure_mode = valid_symbol_failure_modes[index];
+			} else if(strcmp(field_name, "repeat_mode") == 0) {
+				bool valid_repeat_mode = false;
+				unsigned short valid_repeat_mode_name_count = 2;
+				char* valid_repeat_mode_names[] = {
+					"singular",
+					"repeat"
+				};
+				unsigned short valid_repeat_modes[] = {
+					FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR,
+					FACILITIES_MEMORIZE_REPEAT_MODE_REPEAT
+				};
+				unsigned short index;
+				for(unsigned short it = 0; it < valid_repeat_mode_name_count; it++)
+					if(strcmp(field_value, valid_repeat_mode_names[it]) == 0) {
+						valid_repeat_mode = true;
+						index = it;
+						break;
+					}
+				if(!valid_repeat_mode) {
+					if(!quiet) {
+						printf("Invalid repeat mode. Valid repeat modes are:\n");
+						for(unsigned short it = 0; it < valid_repeat_mode_name_count; it++)
+							printf("- `%s`\n", valid_repeat_mode_names[it]);
+					}
+					return FACILITIES_TO_MEMORIZATION_INVALID_REPEAT_MODE;
+				}
+				memorize_repeat_mode = valid_repeat_modes[index];
 			} else
 				return FACILITIES_TO_NOT_IMPLEMENTED;
 
@@ -866,17 +1039,20 @@ int facility_select(unsigned long id) {
 	switch(memorize_mode) {
 		case FACILITIES_MEMORIZE_MODE_WHOLE:
 			while(true) 
-				if(memorize_direct(shuffled_password, shuffle_key, shuffle_key_format) == MEMORIZER_ERROR)
+				if(memorize_direct(shuffled_password, shuffle_key, shuffle_key_format) == MEMORIZER_ERROR
+				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR)
 					break;
 			break;
 		case FACILITIES_MEMORIZE_MODE_BY_SYMBOL:
 			while(true)
-				if(memorize_by_symbols(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, 2, true, false) == MEMORIZER_ERROR)
+				if(memorize_by_symbols(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, memorize_choice_count, memorize_symbol_failure_mode == FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_REPEAT, memorize_symbol_failure_mode == FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_RESTART) == MEMORIZER_ERROR
+				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR)
 					break;
 			break;
 		case FACILITIES_MEMORIZE_MODE_BY_NTH_SYMBOL:
 			while(true)
-				if(memorize_nth_symbol(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, memorize_symbol_number, 2) == MEMORIZER_ERROR)
+				if(memorize_nth_symbol(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, memorize_symbol_number, 2) == MEMORIZER_ERROR
+				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR)
 					break;
 			break;
 	}
