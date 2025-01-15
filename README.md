@@ -71,7 +71,7 @@ Feature-wise:
 
 Security-wise:
 
-- [ ] Use OpenSSL's EVP instead of direct AES functions (https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption)
+- [ ] ~~Use OpenSSL's EVP instead of direct AES functions (https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption)~~
 - [X] Use random IVs instead of all zeroes
 - [ ] Use some of the store password to encrypt password metadata?
 - [ ] Add salt to password before hashing and store it with store metadata

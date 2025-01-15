@@ -6,6 +6,13 @@
 #include "shuffle.h"
 #include "generation.h"
 
+#pragma GCC diagnostic push
+
+/***
+ * I'd rather have to ship modified OpenSSL rather than adopt EVP.
+ */
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 unsigned char* encrypt(unsigned int* result_length, unsigned int* result_iv_length, unsigned char** ivp, char* cipher, unsigned char* bytes, unsigned int length, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {
 	char* key = unshuffle(shuffled_key, shuffle_key, shuffle_key_format);
 	unsigned char* key_digest;
@@ -58,3 +65,5 @@ unsigned char* decrypt(char* cipher, unsigned char* encrypted_bytes, unsigned in
 		// TODO
 	}
 }
+
+#pragma GCC diagnostic pop
