@@ -813,7 +813,7 @@ int facility_generate(char* identifier) {
 	if(strlen(identifier) <= 0)
 		return FACILITIES_GENERARE_EMPTY_IDENTIFIER;
 
-	generate_password_and_append(loaded_store, identifier, password_format, password_length);
+	password_generate_and_append(loaded_store, identifier, password_format, password_length);
 
 	FACILITIES_SET_STORE_DIRTY(true);
 

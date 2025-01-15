@@ -32,23 +32,3 @@ unsigned char* generate_bytes(unsigned int length) {
 	randombytes_buf(bytes, length);
 	return bytes;
 }
-
-Password* generate_password(Store* store, char* format, unsigned int length) {
-	Password* password = password_construct();
-
-	unsigned int length_bytes = length*(sizeof(unsigned long long)/sizeof(char));
-	unsigned char* plain_password_bytes = generate_bytes(length_bytes);
-	
-	passsword_write(store, password, plain_password_bytes, length_bytes, format, length);
-	
-	free(plain_password_bytes);
-	return password;
-}
-
-Password* generate_password_and_append(Store* store, char* identifier, char* format, unsigned int length) {
-	Password* password = generate_password(store, format, length);
-
-	store_append_password(store, password, identifier);
-
-	return password;
-}

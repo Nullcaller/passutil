@@ -89,6 +89,26 @@ bool passsword_write(Store* store, Password* password, unsigned char* plain_pass
 	return true;
 }
 
+Password* password_generate(Store* store, char* format, unsigned int length) {
+	Password* password = password_construct();
+
+	unsigned int length_bytes = length*(sizeof(unsigned long long)/sizeof(char));
+	unsigned char* plain_password_bytes = generate_bytes(length_bytes);
+	
+	passsword_write(store, password, plain_password_bytes, length_bytes, format, length);
+	
+	free(plain_password_bytes);
+	return password;
+}
+
+Password* password_generate_and_append(Store* store, char* identifier, char* format, unsigned int length) {
+	Password* password = password_generate(store, format, length);
+
+	store_append_password(store, password, identifier);
+
+	return password;
+}
+
 /*** STORE-RELATED FUNCTIONS ***/
 
 Store* store_construct() {

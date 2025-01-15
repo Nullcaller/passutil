@@ -45,6 +45,10 @@ char* password_read_plain(Password* password);
 
 bool passsword_write(Store* store, Password* password, unsigned char* plain_password_bytes, unsigned short byte_length, char* format, unsigned short length);
 
+Password* password_generate(Store* store, char* format, unsigned int length);
+
+Password* password_generate_and_append(Store* store, char* identifier, char* format, unsigned int length);
+
 /*** STORE-RELATED FUNCTIONS ***/
 
 struct store {
