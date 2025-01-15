@@ -13,9 +13,9 @@
 
 #include "constants-formats.h"
 
+#include "util/string.h"
 #include "passutil.h"
 #include "pseudoshell.h"
-#include "util.h"
 #include "storage.h"
 #include "generation.h"
 #include "memorizer.h"

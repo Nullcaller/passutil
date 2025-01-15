@@ -6,7 +6,9 @@
 
 #include "storage.h"
 
-#include "util.h"
+#include "util/string.h"
+#include "util/io.h"
+#include "util/crypt.h"
 #include "shuffler.h"
 
 /*** PASSWORD-RELATED FUNCTIONS ***/

@@ -6,7 +6,7 @@
 
 #include "pseudoshell.h"
 
-#include "util.h"
+#include "util/string.h"
 #include "facilities.h"
 
 /*** TERMINAL MANAGEMENT FUNCTIONS ***/

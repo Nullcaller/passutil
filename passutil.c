@@ -16,7 +16,9 @@
 #include "constants-exit-codes.h"
 #include "constants-formats.h"
 
-#include "util.c"
+#include "util/string.c"
+#include "util/io.c"
+#include "util/crypt.c"
 #include "shuffler.c"
 #include "generation.c"
 #include "storage.c"
