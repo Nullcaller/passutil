@@ -13,8 +13,8 @@
 
 #include "passutil.h"
 
-#include "constants-exit-codes.h"
-#include "constants-formats.h"
+#include "constants/exit-codes.h"
+#include "constants/formats.h"
 
 #include "util/string.c"
 #include "util/io.c"

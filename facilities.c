@@ -11,7 +11,7 @@
 
 #include "facilities.h"
 
-#include "constants-formats.h"
+#include "constants/formats.h"
 
 #include "util/string.h"
 #include "util/generation.h"
