@@ -1,7 +1,7 @@
 #include<stdbool.h>
 
-#ifndef SHUFFLER_H
-#define SHUFFLER_H
+#ifndef UTIL_SHUFFLE_H
+#define UTIL_SHUFFLE_H
 
 bool validate_shuffle_key(char* key, char* key_format);
 

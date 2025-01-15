@@ -19,7 +19,7 @@
 #include "util/string.c"
 #include "util/io.c"
 #include "util/crypt.c"
-#include "shuffler.c"
+#include "util/shuffle.c"
 #include "generation.c"
 #include "storage.c"
 #include "memorizer.c"

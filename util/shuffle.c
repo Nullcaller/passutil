@@ -3,7 +3,7 @@
 #include<stdbool.h>
 #include<string.h>
 
-#include "shuffler.h"
+#include "shuffle.h"
 
 bool validate_shuffle_key(char* key, char* key_format) {
 	unsigned int it = 0;

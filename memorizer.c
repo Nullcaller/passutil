@@ -5,7 +5,7 @@
 
 #include "memorizer.h"
 
-#include "shuffler.h"
+#include "util/shuffle.h"
 #include "pseudoshell.h"
 
 // TODO getpass implementation with ^C termination and exit

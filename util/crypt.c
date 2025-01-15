@@ -3,7 +3,7 @@
 
 #include "crypt.h"
 
-#include "../shuffler.h"
+#include "shuffle.h"
 #include "../generation.h"
 
 unsigned char* encrypt(unsigned int* result_length, unsigned int* result_iv_length, unsigned char** ivp, char* cipher, unsigned char* bytes, unsigned int length, char* shuffled_key, char* shuffle_key, char* shuffle_key_format) {

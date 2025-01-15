@@ -9,7 +9,7 @@
 #include "util/string.h"
 #include "util/io.h"
 #include "util/crypt.h"
-#include "shuffler.h"
+#include "util/shuffle.h"
 
 /*** PASSWORD-RELATED FUNCTIONS ***/
 
