@@ -62,8 +62,8 @@ Consider this example: password = `ABE`, shuffle key = `DCFABE`, shuffle key for
 Feature-wise:
 
 - [ ] Store key verification (oh boy)
-- [X] Add memorization helper to facilities and pseudoshell
-- [X] Add more memorization options and allow changing them
+- [X] ~~Add memorization helper to facilities and pseudoshell~~
+- [X] ~~Add more memorization options and allow changing them~~
 - [ ] Implement transfer functions
 - [ ] Add transfer functions to facilities and pseudoshell
 - [ ] Add facility-related arguments and make them do somehting (https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html)
@@ -71,10 +71,11 @@ Feature-wise:
 
 Security-wise:
 
-- [ ] ~~Use OpenSSL's EVP instead of direct AES functions (https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption)~~
-- [X] Use random IVs instead of all zeroes
-- [ ] Use some of the store password to encrypt password metadata?
-- [ ] Add salt to password before hashing and store it with store metadata
+- [X] ~~Use OpenSSL's EVP instead of direct AES functions (https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption)~~
+- [X] ~~Use random IVs instead of all zeroes~~
+- [ ] Clarify cipher mode and make key hashing function selection an option (make same as key verification algo?)
+- [ ] Use some of the store key to encrypt password metadata?
+- [ ] Add salt to key before hashing and store it with store metadata
 - [ ] Make use of libsodium's security features (secure mallocs, RAM management and stuff)
 - [ ] Make more use of password shuffling
 - [ ] More cipher types
@@ -86,7 +87,7 @@ QoL-wise:
 - [ ] Command history so that up/down arrows actually work
 - [ ] Command short codes (e.g. so that you can use `q` instead of `quit`)
 - [ ] Capture all VT100 escape sequences (https://web.archive.org/web/20121225024852/http://www.climagic.org/mirrors/VT100_Escape_Codes.html)
-- [X] Write some actual error messages for facilities
+- [X] ~~Write some actual error messages for facilities~~
 - [ ] Capture ^C, kill/term/etc signals, offer to save on any unsaved changes
 - [ ] `exit` in any mode but store manipulation should probably result in going back to store manipulation mode
 - [ ] In memorization mode, incorrect key presses should result in a "Terminate memorization? (Y/n)" prompt instead of terminating straightaway
@@ -109,4 +110,4 @@ QoC-wise:
 Bug-wise:
 
 - [ ] Track down and fix memory leaks
-- [X] Remove VT100 codes from command strings to alleviate file names like "test-something\033[A.psmf"
+- [X] ~~Remove VT100 codes from command strings to alleviate file names like "test-something\033[A.psmf"~~
