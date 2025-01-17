@@ -1040,19 +1040,29 @@ int facility_select(unsigned long id) {
 		case FACILITIES_MEMORIZE_MODE_WHOLE:
 			while(true) 
 				if(memorize_direct(shuffled_password, shuffle_key, shuffle_key_format) == MEMORIZER_ERROR
-				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR)
+				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR) {
+					if(!pseudoshell_present_yesno_prompt("Terminate memorization?", true))
+						continue;
 					break;
+				}
 			break;
 		case FACILITIES_MEMORIZE_MODE_BY_SYMBOL:
 			while(true)
 				if(memorize_by_symbols(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, memorize_choice_count, memorize_symbol_failure_mode == FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_REPEAT, memorize_symbol_failure_mode == FACILITIES_MEMORIZE_SYMBOL_FAILURE_MODE_RESTART) == MEMORIZER_ERROR
-				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR)
+				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR) {
+					if(!pseudoshell_present_yesno_prompt("Terminate memorization?", true))
+						continue;
 					break;
+				}
 			break;
 		case FACILITIES_MEMORIZE_MODE_BY_NTH_SYMBOL:
 			while(true)
 				if(memorize_nth_symbol(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, memorize_symbol_number, memorize_choice_count) == MEMORIZER_ERROR
+				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR) {
+					if(!pseudoshell_present_yesno_prompt("Terminate memorization?", true))
+						continue;
 					break;
+				}
 			break;
 	}
 

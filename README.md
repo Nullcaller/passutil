@@ -90,7 +90,7 @@ QoL-wise:
 - [X] ~~Write some actual error messages for facilities~~
 - [ ] Capture ^C, kill/term/etc signals, offer to save on any unsaved changes
 - [ ] `exit` in any mode but store manipulation should probably result in going back to store manipulation mode
-- [ ] In memorization mode, incorrect key presses should result in a "Terminate memorization? (Y/n)" prompt instead of terminating straightaway
+- [X] ~~In memorization mode, incorrect key presses should result in a "Terminate memorization? (Y/n)" prompt instead of terminating straightaway~~
 - [ ] Allow loading stores with explicit separate metadata and master file paths (so that, for example, `metadata.txt` and `masterf` are valid metadata and master file names respectively)
 - [ ] Inject debug-related code so that tracking down bugs is less of a nightmare (use preprocessor, only compile debug functions if required)
 - [ ] Don't forget to add an actual help message
