@@ -1074,6 +1074,11 @@ int facility_send();
 int facility_receive();
 
 int facility_exit() {
+	if(mode != FACILITIES_MODE_STORE_MANIPULATION) {
+		facility_switch_mode(FACILITIES_MODE_STORE_MANIPULATION);
+		return FACILITIES_EXIT_MODE_OVERRIDE;
+	}
+
 	if(!FACILITIES_STORE_LOADED)
 		return FACILITIES_OK;
 	

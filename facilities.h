@@ -218,6 +218,7 @@ int facility_send();
 int facility_receive();
 
 #define FACILITIES_EXIT_DIRTY_DISCARD_DENIED		47
+#define FACILITIES_EXIT_MODE_OVERRIDE				67
 
 int facility_exit();
 
