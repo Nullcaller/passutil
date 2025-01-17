@@ -762,8 +762,10 @@ int enter_pseudoshell_loop() {
 		fputs(PSEUDOSHELL_LOOP_PROMPT_START, stdout);
 		fputs(mode_short_names[mode], stdout);
 		fputs(PSEUDOSHELL_LOOP_PROMPT_END, stdout);
-		if(_pseudoshell_handle_command_input(&command_str, &vt100_esc, PSEUDOSHELL_BUFFER_SIZE) < 0)
-			break;
+		if(_pseudoshell_handle_command_input(&command_str, &vt100_esc, PSEUDOSHELL_BUFFER_SIZE) < 0) {
+			putc('\n', stdout);
+			command_str = strcpymalloc("exit");
+		}
 
 		if(strlen(command_str) == 0 && vt100_esc == NULL)
 			continue;
