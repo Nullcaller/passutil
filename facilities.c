@@ -941,7 +941,7 @@ int facility_peek(unsigned long start, unsigned long count, bool present_yn_prom
 			*prompt_result = pseudoshell_present_yesno_prompt(prompt, false);
 		} else {
 			char passchar;
-			pseudoshell_get_sepcific_hidden_character(&passchar, "", "", false, false);
+			pseudoshell_get_specific_hidden_character(&passchar, "", "", false, false);
 		}
 
 		if(!quiet) {

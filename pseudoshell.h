@@ -42,7 +42,7 @@ int pseudoshell_get_string(char** str, unsigned int piece_length);
 
 int pseudoshell_get_password(char** pass, char* prompt, unsigned int piece_length, bool tolerate_eof);
 
-int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid, bool tolerate_eof);
+int pseudoshell_get_specific_hidden_character(char* passchar, char* prompt, char* valid_chars, bool repeat_until_valid, bool tolerate_eof);
 
 /*** PROMPTING (NOT THE LLM KIND) FUNCTIONS ***/
 
