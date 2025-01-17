@@ -86,7 +86,8 @@ QoL-wise:
 
 - [ ] Command history so that up/down arrows actually work
 - [ ] Command short codes (e.g. so that you can use `q` instead of `quit`)
-- [ ] Capture all VT100 escape sequences (https://web.archive.org/web/20121225024852/http://www.climagic.org/mirrors/VT100_Escape_Codes.html)
+- [X] ~~Capture all VT100 escape sequences (https://web.archive.org/web/20121225024852/http://www.climagic.org/mirrors/VT100_Escape_Codes.html)~~
+- [ ] Capture all VT100 escape sequences in `pseudoshell_get_specific_hidden_character`
 - [X] ~~Write some actual error messages for facilities~~
 - [ ] Capture ^C, kill/term/etc signals, offer to save on any unsaved changes
 - [X] ~~`exit` in any mode but store manipulation should probably result in going back to store manipulation mode~~
