@@ -43,6 +43,46 @@ int _pseudoshell_terminal_reset() {
 
 /*** INPUT FUNCTIONS ***/
 
+bool _pseudoshell_is_tasty_vt100_sequence(char* sequence_start) {
+	unsigned int length = strlen(sequence_start);
+
+	if(length <= 1)
+		return false;
+
+	if(length >= 10)
+		return true;
+
+	if(strchr("<=>NODME78HFGABCDIKJZc", sequence_start[1]) != NULL)
+		return true;
+
+	if(sequence_start[1] == '[')
+		return strchr("hlmrABCDHfgKJcyq", sequence_start[length-1]) != NULL;
+
+	if(sequence_start[1] == '(' || sequence_start[1] == ')')
+		return strchr("AB012", sequence_start[length-1]) != NULL;
+	
+	if(sequence_start[1] == 'O')
+		return strchr("PQRSABCDpqrstuvwxymlnM", sequence_start[length-1]) != NULL;
+
+	if(sequence_start[1] == '#')
+		return strchr("34568", sequence_start[length-1]) != NULL;
+
+	if(sequence_start[1] == '/' && sequence_start[length-1] == 'Z')
+		return true;
+
+	if(strchr("1234567890", sequence_start[1]) != NULL)
+		return strchr("nR", sequence_start[length-1]) != NULL;
+
+	if(length == 5) {
+		for(unsigned int it = 1; it < length; it++)
+			if(strchr("1234567890", sequence_start[it]) == NULL)
+				return false;
+		return true;
+	}
+
+	return false;
+}
+
 int _pseudoshell_handle_character_input(
 	/// Memory
 	unsigned int* characters_readp,
@@ -110,7 +150,7 @@ int _pseudoshell_handle_character_input(
 		}
 		
 		if(*vt100_sequence_indicatorp) {
-			if(strchr(FORMAT_AZaz09, *characterp) == NULL)
+			if(!_pseudoshell_is_tasty_vt100_sequence(*strp+*vt100_posp))
 				return _PSEUDOSHELL_INPUT_LOOP_CONTINUE;
 
 			*vt100_sequence_indicatorp = false;
@@ -273,7 +313,7 @@ int pseudoshell_get_sepcific_hidden_character(char* passchar, char* prompt, char
 			continue;
 		}
 		if(vt100_seq) {
-			if(strchr(FORMAT_AZaz09, c) != NULL)
+			if(strchr(FORMAT_AZaz09, c) != NULL) // TODO Replace with is tasty VT100 check (ring buffers, urghh)
 				vt100_seq = false;
 			continue;
 		}
