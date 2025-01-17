@@ -1051,8 +1051,7 @@ int facility_select(unsigned long id) {
 			break;
 		case FACILITIES_MEMORIZE_MODE_BY_NTH_SYMBOL:
 			while(true)
-				if(memorize_nth_symbol(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, memorize_symbol_number, 2) == MEMORIZER_ERROR
-				   || memorize_repeat_mode == FACILITIES_MEMORIZE_REPEAT_MODE_SINGULAR)
+				if(memorize_nth_symbol(shuffled_password, shuffle_key, shuffle_key_format, shuffle_key_format, memorize_symbol_number, memorize_choice_count) == MEMORIZER_ERROR
 					break;
 			break;
 	}
