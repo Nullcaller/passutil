@@ -21,7 +21,7 @@
 #include "util/crypt.c"
 #include "util/shuffle.c"
 #include "util/generation.c"
-#include "util/draw.c"
+#include "util/drawer.c"
 #include "storage.c"
 #include "memorizer.c"
 #include "facilities.c"
