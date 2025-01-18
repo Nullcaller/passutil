@@ -1,9 +1,10 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 
 #include "draw.h"
 
-#include "util/string.h"
+#include "string.h"
 
 void _fill_buf_with_char(char* buf, char character, unsigned short* start, unsigned short length) {
 	for(unsigned short it = 0; it < length; it++)
@@ -62,8 +63,8 @@ void _draw_input_block_line(char* buf, unsigned short* start, unsigned short inp
 	free(_buf);
 }
 
-char* _draw_input_page(unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
-	unsigned short last_line_duds = total_block_num % blocks_per_line;
+char* _draw_input_page(unsigned short* line, unsigned short* column, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+	unsigned short last_line_duds = blocks_per_line - total_block_num % blocks_per_line;
 	unsigned short non_dud_lines = total_block_num / blocks_per_line;
 	
 	char* buf = malloc(sizeof(char)*(target_line_width+1)*(non_dud_lines+((last_line_duds > 0) ? 1 : 0)));
@@ -82,22 +83,169 @@ char* _draw_input_page(unsigned short input_char_num, unsigned short separator_c
 	} else
 		buf[length-1] = '\0';
 
+	*line += (non_dud_lines + ((last_line_duds > 0) ? 1 : 0) - 1);
+	*column = target_line_width;
+
 	return buf;
 }
 
-char* _input_page_move_cursor_from_pos_to_pos(unsigned short line, unsigned short column, unsigned short target_line, unsigned short target_column) {
+char* _input_page_move_cursor_from_pos_to_pos_vt100_esc(unsigned short line, unsigned short column, unsigned short target_line, unsigned short target_column) {
 	char buf[256];
 	unsigned short len = 0;
 
-	if(target_line > line)
+	if((target_line) > line)
 		len += sprintf(buf+len, "\033[%dB", target_line-line);
 	else if(target_line < line)
 		len += sprintf(buf+len, "\033[%dA", line-target_line);
-	
+
 	if(target_column > column)
 		len += sprintf(buf+len, "\033[%dC", target_column-column);
-	else if(column < target_column)
+	else if(target_column < column)
 		len += sprintf(buf+len, "\033[%dD", column-target_column);
 
+	buf[len] = '\0';
+
 	return strcpymalloc(buf);
+}
+
+int _input_page_calculate_input_pos(unsigned short* res_line, unsigned short* res_column, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+	unsigned short block_length = _calculate_input_block_length(input_char_num, separator_char_num, checksum_char_num);
+	unsigned short input_chars_per_block = input_char_num + checksum_char_num;
+
+	unsigned short input_block_index = input_index / input_chars_per_block;
+
+	if(input_block_index >= total_block_num)
+		return -1;
+
+	unsigned short input_index_within_block = input_index % input_chars_per_block;
+
+	unsigned short input_line_index = input_block_index / blocks_per_line;
+	unsigned short input_block_index_within_line = input_block_index % blocks_per_line;
+
+	unsigned short spacing = target_line_width - block_length * blocks_per_line;
+	unsigned short spacing_remainder = spacing % (blocks_per_line + 1);
+	spacing /= blocks_per_line + 1;
+
+	unsigned short column = 0;
+	column += spacing_remainder / 2;
+	column += spacing;
+	column += input_block_index_within_line*(block_length+spacing);
+	column += (input_index_within_block >= input_char_num) ? (input_index_within_block + separator_char_num) : input_index_within_block;
+
+	*res_line = input_line_index;
+	*res_column = column;
+
+	return 0;
+}
+
+char* _input_page_continue_input(unsigned short* line, unsigned short* column, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+	unsigned short input_line, input_column;
+
+	if(_input_page_calculate_input_pos(&input_line, &input_column, input_index, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width) < 0)
+		return NULL;
+
+	char* move = _input_page_move_cursor_from_pos_to_pos_vt100_esc(*line, *column, input_line, input_column);
+
+	*line = input_line;
+	*column = input_column;
+
+	return move;
+}
+
+char* _input_page_draw_input_at_index(unsigned short* line, unsigned short* column, char input, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+	unsigned short input_line = *line, input_column = *column;
+
+	char* move = _input_page_continue_input(&input_line, &input_column, input_index, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
+	if(move == NULL)
+		return NULL;
+
+	unsigned int length = strlen(move);
+
+	char* move_print = malloc(sizeof(char)*(length+2));
+	memcpy(move_print, move, sizeof(char)*length);
+	move_print[length] = input;
+	move_print[length+1] = '\0';
+
+	*line = input_line;
+	*column = input_column+1;
+
+	return move_print;
+}
+
+char* _input_page_cleanup(unsigned short line, unsigned short column, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+	unsigned short line_count = total_block_num / blocks_per_line + (total_block_num % blocks_per_line > 0 ? 1 : 0);
+
+	char* move = _input_page_move_cursor_from_pos_to_pos_vt100_esc(line, column, line_count-1, 0);
+	unsigned short move_len = strlen(move);
+
+	char* line_cleanup = "\033[2K";
+	unsigned short line_cleanup_length = strlen(line_cleanup);
+	char* line_up = "\033[A";
+	unsigned short line_up_length = strlen(line_up);
+
+	char* cleanup_sequence = malloc(sizeof(char)*(line_cleanup_length*line_count+line_up_length*(line_count-1)+1));
+	unsigned int len = 0;
+
+	for(unsigned short it = 1; it <= line_count; it++) {
+		memcpy(cleanup_sequence+len, line_cleanup, line_cleanup_length);
+		len += line_cleanup_length;
+		if(it < line_count) {
+			memcpy(cleanup_sequence+len, line_up, line_up_length);
+			len += line_up_length;
+		}
+	}
+	cleanup_sequence[len] = '\0';
+	len += 1;
+
+	char* move_cleanup_sequence = malloc(sizeof(char)*(move_len+len));
+	memcpy(move_cleanup_sequence, move, move_len);
+	memcpy(move_cleanup_sequence+move_len, cleanup_sequence, len);
+
+	free(move);
+	free(cleanup_sequence);
+
+	return move_cleanup_sequence;
+}
+
+char* _input_page_redraw(unsigned short* line, unsigned short* column, char* input, unsigned short input_length, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+	char* cleanup = _input_page_cleanup(*line, *column, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
+	unsigned int cleanup_length = strlen(cleanup);
+
+	unsigned short _line = 0, _column = 0;
+
+	char* draw = _draw_input_page(&_line, &_column, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
+	unsigned int draw_length = strlen(draw);
+	
+	char** char_draws = malloc(sizeof(char*)*input_length);
+	unsigned int* char_draw_lengths = malloc(sizeof(unsigned int)*input_length);
+	unsigned int len = cleanup_length + draw_length;
+	for(unsigned short it = 0; it < input_length; it++) {
+		char_draws[it] = _input_page_draw_input_at_index(&_line, &_column, input[it], it, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
+		char_draw_lengths[it] = strlen(char_draws[it]);
+		len += char_draw_lengths[it];
+	}
+
+	char* ret = malloc(sizeof(char)*(len+1));
+
+	len = 0;
+	memcpy(ret+len, cleanup, cleanup_length);
+	free(cleanup);
+	len += cleanup_length;
+	memcpy(ret+len, draw, draw_length);
+	free(draw);
+	len += draw_length;
+	for(unsigned short it = 0; it < input_length; it++) {
+		memcpy(ret+len, char_draws[it], char_draw_lengths[it]);
+		free(char_draws[it]);
+		len += char_draw_lengths[it];
+	}
+	free(char_draws);
+	free(char_draw_lengths);
+	ret[len] = '\0';
+	len += 1;
+
+	*line = _line;
+	*column = _column;
+
+	return ret;
 }
