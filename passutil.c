@@ -21,6 +21,7 @@
 #include "util/crypt.c"
 #include "util/shuffle.c"
 #include "util/generation.c"
+#include "util/draw.c"
 #include "storage.c"
 #include "memorizer.c"
 #include "facilities.c"
@@ -94,6 +95,19 @@ int main(int argc, char* argv[]) {
 	}
 
 	// TODO Deny any more arguments after "--interactive" for security reasons, add a `manual override` preprocessor define
+
+	unsigned short line = 0, column = 0;
+	char character;
+
+	unsigned short input_char_num = 8, separator_char_num = 2, checksum_char_num = 3, blocks_per_line = 5, total_block_num = 27, target_line_width = 120;
+
+	fputs(_draw_input_page(&line, &column, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width), stdout);
+	for(int inp = 0; inp < total_block_num*(input_char_num+checksum_char_num); inp++) {
+		fputs(_input_page_continue_input(&line, &column, inp, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width), stdout);
+		pseudoshell_get_specific_hidden_character(&character, "", "1234567890ABCDEF", true, false);
+		fputs(_input_page_draw_input_at_index(&line, &column, character, inp, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width), stdout);
+	}
+	putc('\n', stdout);
 
 	return EXIT_CODE_SUCCESS;
 }
