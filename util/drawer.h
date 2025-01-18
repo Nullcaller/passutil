@@ -14,6 +14,6 @@ char* drawer_input_page_draw_input_at_index(unsigned short* line, unsigned short
 
 char* drawer_input_page_continue_input_at_index(unsigned short* line, unsigned short* column, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width);
 
-char* drawer_input_page_cleanup(unsigned short line, unsigned short column, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width);
+char* drawer_input_page_cleanup(unsigned short line, unsigned short column, unsigned short blocks_per_line, unsigned short total_block_num);
 
 #endif

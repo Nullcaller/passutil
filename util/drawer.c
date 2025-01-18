@@ -209,7 +209,7 @@ char* drawer_input_page_continue_input_at_index(unsigned short* line, unsigned s
 	return move;
 }
 
-char* drawer_input_page_cleanup(unsigned short line, unsigned short column, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+char* drawer_input_page_cleanup(unsigned short line, unsigned short column, unsigned short blocks_per_line, unsigned short total_block_num) {
 	unsigned short line_count = total_block_num / blocks_per_line + (total_block_num % blocks_per_line > 0 ? 1 : 0);
 
 	char* move = _drawer_input_page_move_cursor_from_pos_to_pos_vt100_esc(line, column, line_count-1, 0);
