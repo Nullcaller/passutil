@@ -2,31 +2,31 @@
 #include<stdlib.h>
 #include<string.h>
 
-#include "draw.h"
+#include "drawer.h"
 
 #include "string.h"
 
-void _fill_buf_with_char(char* buf, char character, unsigned short* start, unsigned short length) {
+void _drawer_fill_buf_with_char(char* buf, char character, unsigned short* start, unsigned short length) {
 	for(unsigned short it = 0; it < length; it++)
 		buf[*start+it] = character;
 	*start += length;
 }
 
-unsigned short _calculate_input_block_length(unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num) {
+unsigned short _drawer_input_page_calculate_block_length(unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num) {
 	if(checksum_char_num <= 0)
 		return input_char_num;
 	else
 		return input_char_num + separator_char_num + checksum_char_num;
 }
 
-void _draw_input_block(char* buf, unsigned short* start, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num) {
-	char* _buf = malloc(sizeof(char)*(_calculate_input_block_length(input_char_num, separator_char_num, checksum_char_num)));
+void _drawer_input_page_draw_block(char* buf, unsigned short* start, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num) {
+	char* _buf = malloc(sizeof(char)*(_drawer_input_page_calculate_block_length(input_char_num, separator_char_num, checksum_char_num)));
 	
 	unsigned short len = 0;
-	_fill_buf_with_char(_buf, DRAW_INPUT_CHAR, &len, input_char_num);
+	_drawer_fill_buf_with_char(_buf, DRAWER_INPUT_CHAR, &len, input_char_num);
 	if(checksum_char_num > 0) {
-		_fill_buf_with_char(_buf, DRAW_SEPARATOR_CHAR, &len, separator_char_num);
-		_fill_buf_with_char(_buf, DRAW_CHECKSUM_CHAR, &len, checksum_char_num);
+		_drawer_fill_buf_with_char(_buf, DRAWER_SEPARATOR_CHAR, &len, separator_char_num);
+		_drawer_fill_buf_with_char(_buf, DRAWER_CHECKSUM_CHAR, &len, checksum_char_num);
 	}
 	
 	for(unsigned short it = 0; it < len; it++)
@@ -36,8 +36,8 @@ void _draw_input_block(char* buf, unsigned short* start, unsigned short input_ch
 	free(_buf);
 }
 
-void _draw_input_block_line(char* buf, unsigned short* start, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short dud_block_num, unsigned short target_line_width) {
-	unsigned short block_length = _calculate_input_block_length(input_char_num, separator_char_num, checksum_char_num);
+void _drawer_input_page_draw_block_line(char* buf, unsigned short* start, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short dud_block_num, unsigned short target_line_width) {
+	unsigned short block_length = _drawer_input_page_calculate_block_length(input_char_num, separator_char_num, checksum_char_num);
 	unsigned short spacing = target_line_width - block_length * blocks_per_line;
 	unsigned short spacing_remainder = spacing % (blocks_per_line + 1);
 	spacing /= blocks_per_line + 1;
@@ -45,16 +45,16 @@ void _draw_input_block_line(char* buf, unsigned short* start, unsigned short inp
 
 	char* _buf = malloc(sizeof(char)*(target_line_width+1));
 
-	_fill_buf_with_char(_buf, DRAW_SPACER_CHAR, &len, spacing_remainder / 2);
-	_fill_buf_with_char(_buf, DRAW_SPACER_CHAR, &len, spacing);
+	_drawer_fill_buf_with_char(_buf, DRAWER_SPACER_CHAR, &len, spacing_remainder / 2);
+	_drawer_fill_buf_with_char(_buf, DRAWER_SPACER_CHAR, &len, spacing);
 	for(unsigned short it = 0; it < blocks_per_line; it++) {
 		if(it < blocks_per_line-dud_block_num)
-			_draw_input_block(_buf, &len, input_char_num, separator_char_num, checksum_char_num);
+			_drawer_input_page_draw_block(_buf, &len, input_char_num, separator_char_num, checksum_char_num);
 		else
-			_fill_buf_with_char(_buf, DRAW_SPACER_CHAR, &len, block_length);
-		_fill_buf_with_char(_buf, DRAW_SPACER_CHAR, &len, spacing);
+			_drawer_fill_buf_with_char(_buf, DRAWER_SPACER_CHAR, &len, block_length);
+		_drawer_fill_buf_with_char(_buf, DRAWER_SPACER_CHAR, &len, spacing);
 	}
-	_fill_buf_with_char(_buf, DRAW_SPACER_CHAR, &len, spacing_remainder / 2 + spacing_remainder % 2);
+	_drawer_fill_buf_with_char(_buf, DRAWER_SPACER_CHAR, &len, spacing_remainder / 2 + spacing_remainder % 2);
 
 	for(unsigned short it = 0; it < len; it++)
 		buf[*start+it] = _buf[it];
@@ -63,7 +63,7 @@ void _draw_input_block_line(char* buf, unsigned short* start, unsigned short inp
 	free(_buf);
 }
 
-char* _input_page_move_cursor_from_pos_to_pos_vt100_esc(unsigned short line, unsigned short column, unsigned short target_line, unsigned short target_column) {
+char* _drawer_input_page_move_cursor_from_pos_to_pos_vt100_esc(unsigned short line, unsigned short column, unsigned short target_line, unsigned short target_column) {
 	char buf[256];
 	unsigned short len = 0;
 
@@ -82,8 +82,8 @@ char* _input_page_move_cursor_from_pos_to_pos_vt100_esc(unsigned short line, uns
 	return strcpymalloc(buf);
 }
 
-int _input_page_calculate_input_pos(unsigned short* res_line, unsigned short* res_column, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
-	unsigned short block_length = _calculate_input_block_length(input_char_num, separator_char_num, checksum_char_num);
+int _drawer_input_page_calculate_input_pos(unsigned short* res_line, unsigned short* res_column, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+	unsigned short block_length = _drawer_input_page_calculate_block_length(input_char_num, separator_char_num, checksum_char_num);
 	unsigned short input_chars_per_block = input_char_num + checksum_char_num;
 
 	unsigned short input_block_index = input_index / input_chars_per_block;
@@ -112,7 +112,7 @@ int _input_page_calculate_input_pos(unsigned short* res_line, unsigned short* re
 	return 0;
 }
 
-char* draw_input_page_draw_empty(unsigned short* line, unsigned short* column, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+char* drawer_input_page_draw_empty(unsigned short* line, unsigned short* column, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
 	unsigned short last_line_duds = blocks_per_line - total_block_num % blocks_per_line;
 	unsigned short non_dud_lines = total_block_num / blocks_per_line;
 	
@@ -120,13 +120,13 @@ char* draw_input_page_draw_empty(unsigned short* line, unsigned short* column, u
 	unsigned short length = 0;
 
 	for(unsigned short it = 0; it < non_dud_lines; it++) {
-		_draw_input_block_line(buf, &length, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, 0, target_line_width);
+		_drawer_input_page_draw_block_line(buf, &length, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, 0, target_line_width);
 		buf[length] = '\n';
 		length++;
 	}
 
 	if(last_line_duds > 0) {
-		_draw_input_block_line(buf, &length, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, last_line_duds, target_line_width);
+		_drawer_input_page_draw_block_line(buf, &length, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, last_line_duds, target_line_width);
 		buf[length] = '\0';
 		length++;
 	} else
@@ -138,17 +138,17 @@ char* draw_input_page_draw_empty(unsigned short* line, unsigned short* column, u
 	return buf;
 }
 
-char* draw_input_page_draw_filled(unsigned short* line, unsigned short* column, char* input, unsigned short input_length, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+char* drawer_input_page_draw_filled(unsigned short* line, unsigned short* column, char* input, unsigned short input_length, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
 	unsigned short _line = 0, _column = 0;
 
-	char* draw = draw_input_page_draw_empty(&_line, &_column, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
+	char* draw = drawer_input_page_draw_empty(&_line, &_column, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
 	unsigned int draw_length = strlen(draw);
 	
 	char** char_draws = malloc(sizeof(char*)*input_length);
 	unsigned int* char_draw_lengths = malloc(sizeof(unsigned int)*input_length);
 	unsigned int len = draw_length;
 	for(unsigned short it = 0; it < input_length; it++) {
-		char_draws[it] = draw_input_page_draw_input_at_index(&_line, &_column, input[it], it, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
+		char_draws[it] = drawer_input_page_draw_input_at_index(&_line, &_column, input[it], it, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
 		char_draw_lengths[it] = strlen(char_draws[it]);
 		len += char_draw_lengths[it];
 	}
@@ -175,10 +175,10 @@ char* draw_input_page_draw_filled(unsigned short* line, unsigned short* column, 
 	return ret;
 }
 
-char* draw_input_page_draw_input_at_index(unsigned short* line, unsigned short* column, char input, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+char* drawer_input_page_draw_input_at_index(unsigned short* line, unsigned short* column, char input, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
 	unsigned short input_line = *line, input_column = *column;
 
-	char* move = draw_input_page_continue_input_at_index(&input_line, &input_column, input_index, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
+	char* move = drawer_input_page_continue_input_at_index(&input_line, &input_column, input_index, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width);
 	if(move == NULL)
 		return NULL;
 
@@ -195,13 +195,13 @@ char* draw_input_page_draw_input_at_index(unsigned short* line, unsigned short* 
 	return move_print;
 }
 
-char* draw_input_page_continue_input_at_index(unsigned short* line, unsigned short* column, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+char* drawer_input_page_continue_input_at_index(unsigned short* line, unsigned short* column, unsigned short input_index, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
 	unsigned short input_line, input_column;
 
-	if(_input_page_calculate_input_pos(&input_line, &input_column, input_index, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width) < 0)
+	if(_drawer_input_page_calculate_input_pos(&input_line, &input_column, input_index, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width) < 0)
 		return NULL;
 
-	char* move = _input_page_move_cursor_from_pos_to_pos_vt100_esc(*line, *column, input_line, input_column);
+	char* move = _drawer_input_page_move_cursor_from_pos_to_pos_vt100_esc(*line, *column, input_line, input_column);
 
 	*line = input_line;
 	*column = input_column;
@@ -209,10 +209,10 @@ char* draw_input_page_continue_input_at_index(unsigned short* line, unsigned sho
 	return move;
 }
 
-char* draw_input_page_cleanup(unsigned short line, unsigned short column, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
+char* drawer_input_page_cleanup(unsigned short line, unsigned short column, unsigned short input_char_num, unsigned short separator_char_num, unsigned short checksum_char_num, unsigned short blocks_per_line, unsigned short total_block_num, unsigned short target_line_width) {
 	unsigned short line_count = total_block_num / blocks_per_line + (total_block_num % blocks_per_line > 0 ? 1 : 0);
 
-	char* move = _input_page_move_cursor_from_pos_to_pos_vt100_esc(line, column, line_count-1, 0);
+	char* move = _drawer_input_page_move_cursor_from_pos_to_pos_vt100_esc(line, column, line_count-1, 0);
 	unsigned short move_len = strlen(move);
 
 	char* line_cleanup = "\033[2K";
