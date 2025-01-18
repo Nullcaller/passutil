@@ -26,6 +26,7 @@
 #include "memorizer.c"
 #include "facilities.c"
 #include "pseudoshell.c"
+#include "transfer.c"
 
 int main(int argc, char* argv[]) {
 	/* OPTION PARSING */
@@ -96,10 +97,10 @@ int main(int argc, char* argv[]) {
 
 	// TODO Deny any more arguments after "--interactive" for security reasons, add a `manual override` preprocessor define
 
-	unsigned short line = 0, column = 0;
+	/*unsigned short line = 0, column = 0;
 	char character;
 
-	unsigned short input_char_num = 8, separator_char_num = 2, checksum_char_num = 3, blocks_per_line = 5, total_block_num = 27, target_line_width = 120;
+	unsigned short input_char_num = 8, separator_char_num = 0, checksum_char_num = 0, blocks_per_line = 5, total_block_num = 27, target_line_width = 120;
 
 	fputs(drawer_input_page_draw_empty(&line, &column, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width), stdout);
 	for(int inp = 0; inp < total_block_num*(input_char_num+checksum_char_num); inp++) {
@@ -107,7 +108,10 @@ int main(int argc, char* argv[]) {
 		pseudoshell_get_specific_hidden_character(&character, "", "1234567890ABCDEF", true, false);
 		fputs(drawer_input_page_draw_input_at_index(&line, &column, character, inp, input_char_num, separator_char_num, checksum_char_num, blocks_per_line, total_block_num, target_line_width), stdout);
 	}
-	putc('\n', stdout);
+	putc('\n', stdout);*/
+
+	fputs(_transfer_receive_draw_comparison_table("1234567890ABCDEF", "0987654321FEDCBA"), stdout);
+	fputs(_transfer_receive_undraw_comparison_table("1234567890ABCDEF"), stdout);
 
 	return EXIT_CODE_SUCCESS;
 }
